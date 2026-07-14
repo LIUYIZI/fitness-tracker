@@ -402,46 +402,6 @@ async function pushToCloud(data) {
   }
 }
 
-// Merge cloud data with local: use whichever has more filled sessions
-// When counts match, compare content — cloud wins on mismatch (phone is authoritative)
-async function mergeCloudData() {
-  const cloud = await fetchFromCloud();
-  if (!cloud) {
-    setSyncStatus('local');
-    return; // No cloud data, keep local
-  }
-
-  const localCount = countFilledSessions(state);
-  const cloudCount = countFilledSessions(cloud);
-
-  if (cloudCount > localCount) {
-    // Cloud is newer: adopt it
-    state = cloud;
-    currentSession = state.currentSession || 0;
-    localStorage.setItem(KEY, JSON.stringify(state));
-    setSyncStatus('synced');
-    render(); // Re-render with cloud data
-    console.log('Loaded from cloud (' + cloudCount + ' vs local ' + localCount + ' sessions)');
-  } else if (localCount > cloudCount) {
-    // Local is newer: push to cloud
-    console.log('Local is newer, pushing to cloud');
-    pushToCloud(state);
-  } else {
-    // Same session count — compare actual content
-    const localJson = JSON.stringify(state);
-    const cloudJson = JSON.stringify(cloud);
-    if (localJson !== cloudJson) {
-      // Content differs — adopt cloud (phone is source of truth)
-      console.log('Count match but content differs, adopting cloud');
-      state = cloud;
-      currentSession = state.currentSession || 0;
-      localStorage.setItem(KEY, JSON.stringify(state));
-      render();
-    }
-    setSyncStatus('synced');
-  }
-}
-
 function setSyncStatus(st) {
   syncStatus = st;
   updateSyncIndicator();
@@ -823,10 +783,25 @@ function bindEvents() {
   document.getElementById('importFile')?.addEventListener('change', importData);
 }
 
-// ═══════ GO ═══════
+// ═══════════ GO ═══════════
 render();
-// Init: merge cloud data in background
-setTimeout(() => mergeCloudData(), 500);
+// On page load: pull cloud data and adopt it (cloud is source of truth)
+setTimeout(() => initCloud(), 300);
+
+async function initCloud() {
+  const cloud = await fetchFromCloud();
+  if (!cloud) {
+    setSyncStatus('local');
+    return; // Cloud unavailable, keep localStorage data
+  }
+  // Always adopt cloud data — localStorage is just fallback cache
+  state = cloud;
+  currentSession = state.currentSession || 0;
+  localStorage.setItem(KEY, JSON.stringify(state));
+  setSyncStatus('synced');
+  render();
+  console.log('Adopted cloud data (' + countFilledSessions(cloud) + ' sessions)');
+}
 </script>
 </body>
 </html>
