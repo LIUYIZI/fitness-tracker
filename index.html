@@ -403,6 +403,7 @@ async function pushToCloud(data) {
 }
 
 // Merge cloud data with local: use whichever has more filled sessions
+// When counts match, compare content — cloud wins on mismatch (phone is authoritative)
 async function mergeCloudData() {
   const cloud = await fetchFromCloud();
   if (!cloud) {
@@ -426,11 +427,18 @@ async function mergeCloudData() {
     console.log('Local is newer, pushing to cloud');
     pushToCloud(state);
   } else {
+    // Same session count — compare actual content
+    const localJson = JSON.stringify(state);
+    const cloudJson = JSON.stringify(cloud);
+    if (localJson !== cloudJson) {
+      // Content differs — adopt cloud (phone is source of truth)
+      console.log('Count match but content differs, adopting cloud');
+      state = cloud;
+      currentSession = state.currentSession || 0;
+      localStorage.setItem(KEY, JSON.stringify(state));
+      render();
+    }
     setSyncStatus('synced');
-    // Even if counts match, try pushing in case data differs
-    // (e.g. same number of sessions but different values)
-    console.log('Count match, pushing to ensure sync');
-    pushToCloud(state);
   }
 }
 
