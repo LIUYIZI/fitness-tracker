@@ -535,18 +535,13 @@ function render() {
   // RPE legend
   const rpeKey = RPE_DATA.map(r => `<span><span class="rpe-dot" style="background:${r.c}">${r.v}</span>${r.t}</span>`).join('');
 
-  // Exercises — sort by saved order
+  // Exercises (fixed order, order dropdown records actual sequence)
   let exHtml = '';
-  const exOrdered = s.exs.map((eid, ei) => {
-    const ed = exsData[eid] || {};
-    return { eid, order: ed.order || (ei + 1) };
-  }).sort((a, b) => a.order - b.order);
-
-  exOrdered.forEach(({eid}, displayIdx) => {
+  s.exs.forEach((eid, ei) => {
     const e = M[eid];
     const ed = exsData[eid];
     if (!ed) return;
-    const savedOrder = ed.order || (displayIdx + 1);
+    const savedOrder = ed.order || (ei + 1);
     let rowsHtml = '';
     const dw = (s.dw||{})[eid] || '';
     // Rep hint: show target rep count (e.g. "12" from "10-12", "45秒" from "30-45秒")
@@ -583,7 +578,7 @@ function render() {
 
     exHtml += `<div class="card">
       <div class="card-header">
-        <span class="card-num">${displayIdx+1}</span>
+        <span class="card-num">${ei+1}</span>
         <span class="card-name">${e.name}</span>
         <select data-eid="${eid}" data-field="order" style="font-size:12px;padding:2px 4px;border:1.5px solid #d0d4dc;border-radius:6px;background:#fafbff;margin-left:auto;color:#888;">${[1,2,3,4,5,6].map(i => `<option value="${i}" ${i===savedOrder?'selected':''}>${i}</option>`).join('')}</select>
       </div>
