@@ -249,12 +249,12 @@ const SCALES = [
 ];
 
 const SESSIONS = [
-  {wk:1,n:1,tt:'训练A · 推偏重', note:'找发力感为主，选让最后2次稍费力的重量', isA:true, exs:['legPress','chestPress','row','shPress','legCurl','cableCrunch'], tg:{}},
-  {wk:1,n:2,tt:'训练B · 拉偏重', note:'腿举试35kg · 高位下拉选10-12次标准重量 · 蝴蝶机/腿屈伸/面拉首次做，轻重量找发力感', isA:false, exs:['legPress','latPulldown','pecFly','legExt','facePull','plank'], tg:{legPress:'目标 35kg',latPulldown:'选10-12次标准重量',pecFly:'首次·轻重量找内侧感',legExt:'首次·控制不甩腿',facePull:'首次·肩后束优先',plank:'30-45秒/段'}},
-  {wk:2,n:3,tt:'训练A · 推偏重', note:'腿举35kg · 推胸维持20-25kg冲标准次数 · 划船25→30→35kg递增 · 腿弯举12kg×3组', isA:true, exs:['legPress','chestPress','row','shPress','legCurl','cableCrunch'], tg:{legPress:'目标 35kg',chestPress:'20→25→25kg 冲次数',row:'25→30→35kg 递增',shPress:'20→25→25kg 保持',legCurl:'12kg×3组统一',cableCrunch:'45→45→50kg'}},
-  {wk:2,n:4,tt:'训练B · 拉偏重', note:'腿举维持上周 · 高位下拉+2.5kg · 蝴蝶机/腿屈伸+2.5kg · 面拉保持', isA:false, exs:['legPress','latPulldown','pecFly','legExt','facePull','plank'], tg:{legPress:'维持上周重量',latPulldown:'+2.5kg',pecFly:'+2.5kg',legExt:'+2.5kg',facePull:'保持',plank:'冲45秒'}},
-  {wk:3,n:5,tt:'训练A · 推偏重 🏆', note:'腿举40kg · 推胸25kg×3组全冲10次 · 划船35kg · 推肩25-30kg · 腿弯举15kg · 允许递减组', isA:true, exs:['legPress','chestPress','row','shPress','legCurl','cableCrunch'], tg:{legPress:'目标 40kg',chestPress:'25kg×3组全冲10次',row:'35kg',shPress:'25→25→30kg',legCurl:'15kg·可递减组',cableCrunch:'50kg'}},
-  {wk:3,n:6,tt:'训练B · 拉偏重 🏆', note:'腿举40-45kg · 高位下拉加片 · 蝴蝶机夹胸找内侧泵感 · 训练后填写Cycle1总结', isA:false, exs:['legPress','latPulldown','pecFly','legExt','facePull','plank'], tg:{legPress:'40→45kg',latPulldown:'加片',pecFly:'找内侧泵感',legExt:'维持',facePull:'维持',plank:'冲60秒'}}
+  {wk:1,n:1,tt:'训练A · 推偏重', note:'找发力感为主，选让最后2次稍费力的重量', isA:true, exs:['legPress','chestPress','row','shPress','legCurl','cableCrunch'], tg:{}, dw:{}},
+  {wk:1,n:2,tt:'训练B · 拉偏重', note:'腿举试35kg · 高位下拉选10-12次标准重量 · 蝴蝶机/腿屈伸/面拉首次做，轻重量找发力感', isA:false, exs:['legPress','latPulldown','pecFly','legExt','facePull','plank'], tg:{legPress:'目标 35kg',latPulldown:'选10-12次标准重量',pecFly:'首次·轻重量找内侧感',legExt:'首次·控制不甩腿',facePull:'首次·肩后束优先',plank:'30-45秒/段'}, dw:{legPress:'35',latPulldown:'',pecFly:'',legExt:'',facePull:'',plank:'30'}},
+  {wk:2,n:3,tt:'训练A · 推偏重', note:'腿举35kg · 推胸维持20-25kg冲标准次数 · 划船25→30→35kg递增 · 腿弯举12kg×3组', isA:true, exs:['legPress','chestPress','row','shPress','legCurl','cableCrunch'], tg:{legPress:'目标 35kg',chestPress:'20→25→25kg 冲次数',row:'25→30→35kg 递增',shPress:'20→25→25kg 保持',legCurl:'12kg×3组统一',cableCrunch:'45→45→50kg'}, dw:{legPress:'35',chestPress:'20',row:'25',shPress:'20',legCurl:'12',cableCrunch:'45'}},
+  {wk:2,n:4,tt:'训练B · 拉偏重', note:'腿举维持上周 · 高位下拉+2.5kg · 蝴蝶机/腿屈伸+2.5kg · 面拉保持', isA:false, exs:['legPress','latPulldown','pecFly','legExt','facePull','plank'], tg:{legPress:'维持上周重量',latPulldown:'+2.5kg',pecFly:'+2.5kg',legExt:'+2.5kg',facePull:'保持',plank:'冲45秒'}, dw:{}},
+  {wk:3,n:5,tt:'训练A · 推偏重 🏆', note:'腿举40kg · 推胸25kg×3组全冲10次 · 划船35kg · 推肩25-30kg · 腿弯举15kg · 允许递减组', isA:true, exs:['legPress','chestPress','row','shPress','legCurl','cableCrunch'], tg:{legPress:'目标 40kg',chestPress:'25kg×3组全冲10次',row:'35kg',shPress:'25→25→30kg',legCurl:'15kg·可递减组',cableCrunch:'50kg'}, dw:{legPress:'40',chestPress:'25',row:'35',shPress:'25',legCurl:'15',cableCrunch:'50'}},
+  {wk:3,n:6,tt:'训练B · 拉偏重 🏆', note:'腿举40-45kg · 高位下拉加片 · 蝴蝶机夹胸找内侧泵感 · 训练后填写Cycle1总结', isA:false, exs:['legPress','latPulldown','pecFly','legExt','facePull','plank'], tg:{legPress:'40→45kg',latPulldown:'加片',pecFly:'找内侧泵感',legExt:'维持',facePull:'维持',plank:'冲60秒'}, dw:{legPress:'40',plank:'60'}}
 ];
 
 // ═══════════ STATE ═══════════
@@ -520,8 +520,11 @@ function render() {
     const ed = exsData[eid];
     if (!ed) return;
     let rowsHtml = '';
+    const dw = (s.dw||{})[eid] || '';
     [0,1,2].forEach(setIdx => {
       const sd = ed.sets[setIdx] || {w:'',r:'',rpe:'',feel:[]};
+      // Use default weight from session plan if field is empty
+      const showW = sd.w || (setIdx===0 ? dw : '');
       const rpeOpts = RPE_DATA.map(r => {
         const id = `rpe_${currentSession}_${eid}_${setIdx}_${r.v}`;
         const chk = sd.rpe == r.v ? 'checked' : '';
@@ -534,7 +537,7 @@ function render() {
       }).join('');
       rowsHtml += `<div class="set-row" data-eid="${eid}" data-set="${setIdx}">
         <span class="set-num">${setIdx+1}</span>
-        <span class="set-weight"><input type="text" inputmode="decimal" value="${sd.w}" data-field="w" placeholder="kg"><span class="u">kg</span></span>
+        <span class="set-weight"><input type="text" inputmode="decimal" value="${showW}" data-field="w" placeholder="kg"><span class="u">kg</span></span>
         <span class="set-reps"><input type="text" inputmode="numeric" value="${sd.r}" data-field="r" placeholder="次"><span class="u">次</span></span>
         <div class="rpe-group">${rpeOpts}</div>
       </div>
