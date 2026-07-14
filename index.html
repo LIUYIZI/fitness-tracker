@@ -101,6 +101,9 @@ body {
   width: 48px; font-size: 17px; padding: 6px 4px; text-align: center;
   border: 1.5px solid #d0d4dc; border-radius: 8px; background: #fafbff;
 }
+.set-weight input::placeholder, .set-reps input::placeholder {
+  color: #c0c4cc; font-size: 14px; font-weight: 400;
+}
 .set-weight .u, .set-reps .u { font-size: 13px; color: #999; }
 
 /* RPE radio */
@@ -533,10 +536,12 @@ function render() {
     if (!ed) return;
     let rowsHtml = '';
     const dw = (s.dw||{})[eid] || '';
+    // Rep hint: derive from exercise target (e.g. "3×10-12" → "10-12")
+    const repHint = e.t.includes('×') ? e.t.split('×')[1] : e.t;
     [0,1,2].forEach(setIdx => {
       const sd = ed.sets[setIdx] || {w:'',r:'',rpe:'',feel:[]};
-      // Use default weight from session plan if field is empty
-      const showW = sd.w || dw;
+      // For untrained sessions: show planned weight as placeholder hint, NOT as pre-filled value
+      const weightPh = sd.w ? '' : (dw || '');
       const rpeOpts = RPE_DATA.map(r => {
         const id = `rpe_${currentSession}_${eid}_${setIdx}_${r.v}`;
         const chk = sd.rpe == r.v ? 'checked' : '';
@@ -549,8 +554,8 @@ function render() {
       }).join('');
       rowsHtml += `<div class="set-row" data-eid="${eid}" data-set="${setIdx}">
         <span class="set-num">${setIdx+1}</span>
-        <span class="set-weight"><input type="text" inputmode="decimal" value="${showW}" data-field="w" placeholder="kg"><span class="u">kg</span></span>
-        <span class="set-reps"><input type="text" inputmode="numeric" value="${sd.r}" data-field="r" placeholder="次"><span class="u">次</span></span>
+        <span class="set-weight"><input type="text" inputmode="decimal" value="${sd.w}" data-field="w" placeholder="${weightPh}"><span class="u">kg</span></span>
+        <span class="set-reps"><input type="text" inputmode="numeric" value="${sd.r}" data-field="r" placeholder="${repHint}"><span class="u">次</span></span>
         <div class="rpe-group">${rpeOpts}</div>
       </div>
       <div class="feel-section">${feelHtml}</div>`;
