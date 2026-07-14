@@ -149,7 +149,9 @@
     },
     "stretch": {
       "胸大肌": true,
-      "三头肌": true
+      "三头肌": true,
+      "_done": true,
+      "_miss": false
     },
     "scales": {},
     "notes": ""
