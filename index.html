@@ -492,6 +492,7 @@ function render() {
   const stretch = state[`s${currentSession}`].stretch;
   const scales = state[`s${currentSession}`].scales;
   const notes = state[`s${currentSession}`].notes;
+  const date = state[`s${currentSession}`].date || new Date().toISOString().slice(0, 10);
 
   // Session buttons
   let sesHtml = SESSIONS.map((sess, i) => {
@@ -597,6 +598,10 @@ function render() {
   <div class="pre-section">
     <h3>训练前状态</h3>
     <div class="pre-grid">${preHtml}</div>
+    <div style="margin-top:8px;display:flex;align-items:center;gap:8px;">
+      <span style="font-size:14px;color:#555;font-weight:600;">📅 训练日期：</span>
+      <input type="date" id="trainDate" value="${date}" style="font-size:15px;padding:6px 10px;border:1.5px solid #d0d4dc;border-radius:8px;background:#fafbff;">
+    </div>
   </div>
   ${exHtml}
   <div class="bottom-section">
@@ -618,11 +623,6 @@ function render() {
       <textarea placeholder="自由记录（非必填）：问题、异常、想调整的方向…">${notes || ''}</textarea>
     </div>
   </div>
-  <div style="display:flex;gap:8px;margin:6px 14px 10px;">
-    <button id="exportBtn" style="flex:1;padding:10px;border:1.5px solid #4a6cf7;background:#fff;color:#4a6cf7;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">📤 导出数据</button>
-    <button id="importBtn" style="flex:1;padding:10px;border:1.5px solid #2d7d46;background:#fff;color:#2d7d46;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">📥 导入数据</button>
-  </div>
-  <input type="file" id="importFile" accept=".json" style="display:none">
   <div style="height:60px"></div>`;
 
   document.getElementById('app').innerHTML = appHtml;
@@ -777,10 +777,11 @@ function bindEvents() {
     autoSave();
   });
 
-  // ═══ Export / Import ═══
-  document.getElementById('exportBtn')?.addEventListener('click', exportData);
-  document.getElementById('importBtn')?.addEventListener('click', () => document.getElementById('importFile')?.click());
-  document.getElementById('importFile')?.addEventListener('change', importData);
+  // Date
+  document.getElementById('trainDate')?.addEventListener('change', (e) => {
+    state[`s${currentSession}`].date = e.target.value;
+    autoSave();
+  });
 }
 
 // ═══════════ GO ═══════════
