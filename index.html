@@ -299,7 +299,74 @@ function saveState() {
 
 // Auto-save debounce
 let saveTimer;
-function autoSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveState, 300); }
+function autoSave() { clearTimeout(saveTimer); saveTimer = setTimeout(() => { saveState(); autoSync(); }, 300); }
+
+// ═══════════ GITHUB SYNC ═══════════
+const GIT_REPO = 'LIUYIZI/fitness-tracker';
+const GIT_PATH = 'data.json';
+const GIT_TOKEN = 'ghp_3Pdn34NHvjn8Cyt0mZ0PAGOijsfn22FAFDP';
+let gitSha = null;
+
+async function syncPull() {
+  try {
+    const res = await fetch(`https://api.github.com/repos/${GIT_REPO}/contents/${GIT_PATH}`, {
+      headers: { 'Authorization': `token ${GIT_TOKEN}`, 'Accept': 'application/vnd.github.v3+json' }
+    });
+    if (!res.ok) { if (res.status === 404) return; throw new Error('HTTP ' + res.status); }
+    const d = await res.json();
+    gitSha = d.sha;
+    const remote = JSON.parse(atob(d.content));
+    // Merge: remote overwrites local only if remote has data and local is empty
+    const hasLocalData = Object.keys(state).some(k => k.startsWith('s') && Object.keys(state[k].exs || {}).length > 0);
+    const hasRemoteData = Object.keys(remote).some(k => k.startsWith('s') && Object.keys(remote[k]?.exs || {}).length > 0);
+    if (hasRemoteData && !hasLocalData) {
+      state = remote;
+      currentSession = state.currentSession || 0;
+      localStorage.setItem('hermes_fitness_c1', JSON.stringify(state));
+      updateSyncStatus('☁️ 已同步云端');
+      return true;
+    }
+    updateSyncStatus('☁️ 已连接');
+    return false;
+  } catch(e) {
+    updateSyncStatus('☁️ 同步离线');
+    return false;
+  }
+}
+
+async function syncPush() {
+  try {
+    saveState();
+    // Get current SHA first
+    const res = await fetch(`https://api.github.com/repos/${GIT_REPO}/contents/${GIT_PATH}`, {
+      headers: { 'Authorization': `token ${GIT_TOKEN}`, 'Accept': 'application/vnd.github.v3+json' }
+    });
+    if (res.ok) { const d = await res.json(); gitSha = d.sha; }
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(state))));
+    const body = { message: `sync ${new Date().toISOString().slice(0,16)}`, content };
+    if (gitSha) body.sha = gitSha;
+    const putRes = await fetch(`https://api.github.com/repos/${GIT_REPO}/contents/${GIT_PATH}`, {
+      method: 'PUT',
+      headers: { 'Authorization': `token ${GIT_TOKEN}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (putRes.ok) {
+      const d = await putRes.json();
+      gitSha = d.content?.sha;
+      updateSyncStatus('☁️ 已同步');
+    }
+  } catch(e) {
+    updateSyncStatus('☁️ 同步失败');
+  }
+}
+
+let syncTimer;
+function autoSync() { clearTimeout(syncTimer); syncTimer = setTimeout(syncPush, 3000); }
+
+function updateSyncStatus(text) {
+  const el = document.getElementById('syncStatus');
+  if (el) el.textContent = text;
+}
 
 // ═══════════ EXPORT / IMPORT ═══════════
 function exportData() {
@@ -442,7 +509,7 @@ function render() {
 
   const appHtml = `<div class="app-header">
     <h1>🏋️ Cycle 1 · 第${s.n}次</h1>
-    <div class="sub">${s.tt} · 第${s.wk}/3周</div>
+    <div class="sub">${s.tt} · 第${s.wk}/3周 · <span id="syncStatus">☁️ 同步中...</span></div>
   </div>
   <div class="session-bar">${sesHtml}</div>
   <div id="saveIndicator" class="save-indicator">🔄 自动保存中</div>
@@ -637,7 +704,8 @@ function bindEvents() {
 }
 
 // ═══════════ GO ═══════════
-render();
+// Pull cloud data first, then render
+syncPull().then(() => render());
 </script>
 </body>
 </html>
