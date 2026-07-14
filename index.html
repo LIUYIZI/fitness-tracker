@@ -250,11 +250,11 @@ const SCALES = [
 
 const SESSIONS = [
   {wk:1,n:1,tt:'训练A · 推偏重', note:'找发力感为主，选让最后2次稍费力的重量', isA:true, exs:['legPress','chestPress','row','shPress','legCurl','cableCrunch']},
-  {wk:1,n:2,tt:'训练B · 拉偏重', note:'感受目标肌群，同重量起步不心急', isA:false, exs:['legPress','latPulldown','pecFly','legExt','facePull','plank']},
-  {wk:2,n:3,tt:'训练A · 推偏重', note:'尝试+2.5-5kg或+1-2次，优先保证动作标准', isA:true, exs:['legPress','chestPress','row','shPress','legCurl','cableCrunch']},
-  {wk:2,n:4,tt:'训练B · 拉偏重', note:'增重或增次，动作质量不下降', isA:false, exs:['legPress','latPulldown','pecFly','legExt','facePull','plank']},
-  {wk:3,n:5,tt:'训练A · 推偏重', note:'冲刺！推到W1上限，允许递减组', isA:true, exs:['legPress','chestPress','row','shPress','legCurl','cableCrunch']},
-  {wk:3,n:6,tt:'训练B · 拉偏重', note:'Cycle1最后一练！总结3个问题', isA:false, exs:['legPress','latPulldown','pecFly','legExt','facePull','plank']}
+  {wk:1,n:2,tt:'训练B · 拉偏重', note:'腿举试35kg · 高位下拉选10-12次标准重量 · 蝴蝶机/腿屈伸/面拉首次做，轻重量找发力感', isA:false, exs:['legPress','latPulldown','pecFly','legExt','facePull','plank']},
+  {wk:2,n:3,tt:'训练A · 推偏重', note:'腿举35kg · 推胸维持20-25kg冲标准次数 · 划船25→30→35kg递增 · 腿弯举12kg×3组', isA:true, exs:['legPress','chestPress','row','shPress','legCurl','cableCrunch']},
+  {wk:2,n:4,tt:'训练B · 拉偏重', note:'腿举维持上周 · 高位下拉+2.5kg · 蝴蝶机/腿屈伸+2.5kg · 面拉保持', isA:false, exs:['legPress','latPulldown','pecFly','legExt','facePull','plank']},
+  {wk:3,n:5,tt:'训练A · 推偏重 🏆冲刺', note:'腿举40kg · 推胸25kg×3组全冲10次 · 划船35kg · 推肩25-30kg · 腿弯举15kg · 允许递减组', isA:true, exs:['legPress','chestPress','row','shPress','legCurl','cableCrunch']},
+  {wk:3,n:6,tt:'训练B · 拉偏重 🏆收尾', note:'腿举40-45kg · 高位下拉加片 · 蝴蝶机夹胸找内侧泵感 · 训练后填写Cycle1总结', isA:false, exs:['legPress','latPulldown','pecFly','legExt','facePull','plank']}
 ];
 
 // ═══════════ STATE ═══════════
@@ -623,6 +623,11 @@ function render() {
       <textarea placeholder="自由记录（非必填）：问题、异常、想调整的方向…">${notes || ''}</textarea>
     </div>
   </div>
+  ${state[`s${currentSession}`].coachNote ? `
+  <div style="background:#fff;margin:0 14px 10px;border-radius:12px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,0.06);border-left:4px solid #4a6cf7;">
+    <h3 style="font-size:15px;margin:0 0 6px;font-weight:600;">📋 教练评价与建议</h3>
+    <div style="font-size:14px;line-height:1.7;color:#333;white-space:pre-wrap;">${state[`s${currentSession}`].coachNote}</div>
+  </div>` : ''}
   <div style="height:60px"></div>`;
 
   document.getElementById('app').innerHTML = appHtml;
