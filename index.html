@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>训练打卡 - Cycle 1</title>
+<style>
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #f0f2f5; margin: 0; padding: 0 0 80px 0; color: #1a1a2e;
+  font-size: 16px; line-height: 1.5;
+}
+
+/* header */
+.app-header {
+  background: linear-gradient(135deg, #1a1a2e, #2d3a6e);
+  color: #fff; padding: 16px 18px; position: sticky; top: 0; z-index: 10;
+}
+.app-header h1 { margin: 0; font-size: 20px; font-weight: 700; }
+.app-header .sub { font-size: 13px; opacity: 0.8; margin-top: 2px; }
+
+/* session selector */
+.session-bar {
+  display: flex; gap: 6px; overflow-x: auto; padding: 10px 14px;
+  background: #fff; border-bottom: 1px solid #e0e3e8;
+  -webkit-overflow-scrolling: touch; position: sticky; top: 74px; z-index: 9;
+}
+.session-btn {
+  flex-shrink: 0; padding: 8px 14px; border-radius: 20px; border: 1.5px solid #d0d4dc;
+  background: #fff; font-size: 13px; font-weight: 600; color: #555; cursor: pointer;
+  white-space: nowrap; transition: all 0.2s;
+}
+.session-btn.active { background: #4a6cf7; color: #fff; border-color: #4a6cf7; }
+.session-btn.done { border-color: #2d7d46; color: #2d7d46; }
+.session-btn.done::after { content: ' ✅'; font-size: 11px; }
+
+/* save indicator */
+.save-indicator {
+  text-align: center; font-size: 12px; color: #999; padding: 6px;
+  position: sticky; top: 126px; background: #f0f2f5; z-index: 8;
+}
+
+/* pre-check */
+.pre-section {
+  background: #fff; margin: 10px 14px; border-radius: 10px; padding: 14px 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.pre-section h3 { font-size: 14px; margin: 0 0 10px; font-weight: 600; color: #555; }
+.pre-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.pre-grid label {
+  display: flex; align-items: center; gap: 6px; font-size: 15px;
+  padding: 6px 12px; border: 1.5px solid #e0e3e8; border-radius: 8px;
+  cursor: pointer; transition: all 0.2s;
+}
+.pre-grid input { width: 18px; height: 18px; accent-color: #4a6cf7; margin: 0; }
+.pre-grid label:has(input:checked) { border-color: #4a6cf7; background: #f0f2ff; }
+
+/* note banner */
+.note-banner {
+  background: linear-gradient(135deg,#e8f5e9,#dff0e2);
+  border-left: 4px solid #2d7d46; margin: 0 14px 10px; padding: 10px 14px;
+  border-radius: 8px; font-size: 14px;
+}
+
+/* exercise card */
+.card {
+  background: #fff; margin: 0 14px 10px; border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06); overflow: hidden;
+}
+.card-header {
+  display: flex; align-items: center; gap: 8px; padding: 14px 16px 8px;
+}
+.card-num {
+  width: 28px; height: 28px; border-radius: 50%; background: #4a6cf7;
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14px; flex-shrink: 0;
+}
+.card-name { font-weight: 700; font-size: 17px; }
+.card-target { font-size: 13px; color: #2d7d46; font-weight: 600; background: #e8f5e9; padding: 1px 10px; border-radius: 10px; }
+.card-meta { font-size: 13px; color: #888; }
+.card-tips {
+  font-size: 14px; color: #333; padding: 0 16px 6px;
+  border-left: 3px solid #4a6cf7; margin: 0 16px 8px; padding-left: 10px;
+}
+.card-bad {
+  font-size: 13px; color: #b64a4a; padding: 0 16px 6px;
+  border-left: 3px solid #e53935; margin: 0 16px 8px; padding-left: 10px;
+}
+
+/* set rows */
+.sets { padding: 0 16px 10px; }
+.set-row {
+  display: flex; align-items: center; gap: 6px; padding: 8px 0;
+  border-bottom: 1px solid #f0f2f5;
+}
+.set-row:last-child { border-bottom: none; }
+.set-num { font-weight: 700; font-size: 15px; min-width: 24px; color: #888; }
+.set-weight, .set-reps { display: flex; align-items: center; gap: 2px; }
+.set-weight input, .set-reps input {
+  width: 48px; font-size: 17px; padding: 6px 4px; text-align: center;
+  border: 1.5px solid #d0d4dc; border-radius: 8px; background: #fafbff;
+}
+.set-weight .u, .set-reps .u { font-size: 13px; color: #999; }
+
+/* RPE radio */
+.rpe-group {
+  display: flex; gap: 0; margin-left: auto;
+  background: #f5f6fa; border-radius: 8px; overflow: hidden;
+}
+.rpe-group label {
+  display: flex; align-items: center; gap: 2px; padding: 6px 6px;
+  font-size: 14px; cursor: pointer; border-right: 1px solid #e0e3e8;
+}
+.rpe-group label:last-child { border-right: none; }
+.rpe-group label:has(input:checked) { background: #4a6cf7; color: #fff; }
+.rpe-group input { width: 16px; height: 16px; margin: 0; accent-color: #4a6cf7; }
+
+/* done checkbox */
+.set-done {
+  margin-left: 2px; width: 22px; height: 22px; accent-color: #4a6cf7;
+}
+
+/* RPE legend */
+.rpe-legend {
+  display: flex; gap: 4px 10px; flex-wrap: wrap; font-size: 12px;
+  padding: 8px 16px 0; color: #666;
+}
+.rpe-dot { display: inline-block; width: 16px; height: 16px; border-radius: 50%; text-align: center; line-height: 16px; font-size: 9px; font-weight: 700; color: #fff; }
+
+/* feel tags */
+.feel-section {
+  padding: 0 16px 14px; display: flex; flex-wrap: wrap; gap: 6px;
+}
+.feel-label { font-size: 13px; color: #888; margin-right: 4px; padding-top: 4px; }
+.feel-section label {
+  display: flex; align-items: center; gap: 4px; font-size: 14px;
+  padding: 5px 10px; border: 1.5px solid #e0e3e8; border-radius: 8px; cursor: pointer;
+}
+.feel-section input { width: 16px; height: 16px; accent-color: #f5a623; margin: 0; }
+.feel-section label:has(input:checked) { border-color: #f5a623; background: #fff8e1; }
+
+/* bottom section */
+.bottom-section {
+  background: #fff; margin: 0 14px 10px; border-radius: 12px;
+  padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.bottom-section h3 { font-size: 15px; margin: 0 0 8px; font-weight: 600; }
+.tag-group { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.tag-group label {
+  display: flex; align-items: center; gap: 4px; font-size: 14px;
+  padding: 6px 12px; border: 1.5px solid #e0e3e8; border-radius: 8px; cursor: pointer;
+}
+.tag-group input { width: 16px; height: 16px; accent-color: #4a6cf7; margin: 0; }
+.tag-group label:has(input:checked) { border-color: #4a6cf7; background: #f0f2ff; }
+
+/* scale row */
+.scales { margin: 10px 0 0; }
+.scale-item { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.scale-item .sl { font-weight: 600; font-size: 14px; min-width: 52px; }
+.scale-opts { display: flex; gap: 0; background: #f5f6fa; border-radius: 8px; overflow: hidden; }
+.scale-opts label {
+  padding: 7px 10px; font-size: 13px; cursor: pointer;
+  border-right: 1px solid #e0e3e8; white-space: nowrap;
+}
+.scale-opts label:last-child { border-right: none; }
+.scale-opts label:has(input:checked) { background: #4a6cf7; color: #fff; }
+.scale-opts input { width: 0; height: 0; opacity: 0; position: absolute; }
+
+/* notes */
+.notes-area { margin-top: 6px; }
+.notes-area textarea {
+  width: 100%; font-size: 16px; padding: 10px 12px; border-radius: 8px;
+  border: 1.5px solid #d0d4dc; resize: vertical; min-height: 60px;
+  font-family: inherit; background: #fafbff;
+}
+
+/* save btn */
+.save-btn {
+  display: block; width: calc(100% - 28px); margin: 10px 14px; padding: 14px;
+  background: #4a6cf7; color: #fff; border: none; border-radius: 12px;
+  font-size: 17px; font-weight: 700; cursor: pointer;
+  position: fixed; bottom: 10px; left: 0; z-index: 20;
+  box-shadow: 0 4px 12px rgba(74,108,247,0.3);
+}
+.save-btn:active { transform: scale(0.98); }
+
+/* dark mode support */
+@media (prefers-color-scheme: dark) {
+  body { background: #1a1a2e; color: #e8eaef; }
+  .app-header { background: linear-gradient(135deg,#0f0f1a,#1a2550); }
+  .session-bar, .pre-section, .card, .bottom-section { background: #252540; }
+  .session-btn { background: #252540; border-color: #3a3a55; color: #aaa; }
+  .session-btn.active { background: #4a6cf7; color: #fff; }
+  .set-weight input, .set-reps input { background: #1e1e35; border-color: #3a3a55; color: #e8eaef; }
+  .rpe-group { background: #1e1e35; }
+  .rpe-group label { border-color: #3a3a55; }
+  .rpe-group label:has(input:checked) { background: #4a6cf7; }
+  .scale-opts { background: #1e1e35; }
+  .scale-opts label { border-color: #3a3a55; }
+  .scale-opts label:has(input:checked) { background: #4a6cf7; }
+  .pre-grid label { border-color: #3a3a55; }
+  .pre-grid label:has(input:checked) { background: #1e1e3a; border-color: #4a6cf7; }
+  .feel-section label { border-color: #3a3a55; }
+  .tag-group label { border-color: #3a3a55; }
+  .tag-group label:has(input:checked) { background: #1e1e3a; border-color: #4a6cf7; }
+  .notes-area textarea { background: #1e1e35; border-color: #3a3a55; color: #e8eaef; }
+}
+
+@media (max-width: 400px) {
+  .rpe-group label { padding: 6px 4px; font-size: 13px; }
+  .set-weight input, .set-reps input { width: 40px; }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ═══════════ DATA ═══════════
+const RPE_DATA = [
+  {v:6, c:'#4caf50', t:'轻松'},
+  {v:7, c:'#8bc34a', t:'可控'},
+  {v:8, c:'#f5a623', t:'较难'},
+  {v:9, c:'#ff7043', t:'吃力'},
+  {v:10,c:'#e53935', t:'力竭'}
+];
+
+const EX = [
+  {id:'legPress',    name:'坐姿腿举机',   t:'3×10-12', tm:'2-0-1-0', rs:'90s', tips:'脚掌踩实 · 下放至大腿平行 · 推起膝微屈不锁死', bad:'膝盖内扣外翻 · 下放过低腰离垫', feel:['股四酸','臀酸','膝盖前不适']},
+  {id:'chestPress',  name:'坐姿推胸机',  t:'3×10-12', tm:'2-0-1-0', rs:'75s', tips:'肩胛后收下沉 · 肘与身75° · 用胸发力', bad:'耸肩 · 肘外展过大 · 臀部离椅', feel:['胸酸','三头酸','肩前不适']},
+  {id:'row',         name:'坐姿划船机',      t:'3×10-12', tm:'2-1-1-0', rs:'75s', tips:'肩胛先夹再拉 · 肘贴身 · 拉到腹部', bad:'身体后仰 · 肘外展 · 含胸', feel:['背阔酸','斜方中酸','二头酸','下背紧']},
+  {id:'shPress',     name:'坐姿推肩机',   t:'3×10-12', tm:'2-0-1-0', rs:'60s', tips:'先沉肩再推 · 坐直 · 顶端微屈肘', bad:'耸肩代偿 · 后仰借力', feel:['三角肌酸','斜方代偿','肩咔咔响']},
+  {id:'legCurl',     name:'俯卧腿弯举机', t:'3×12-15', tm:'3-1-1-0', rs:'60s', tips:'离心用3秒 · 骨盆贴垫 · 脚踝放松', bad:'放下太快 · 臀部上抬 · 小腿代偿', feel:['腘绳酸','小腿酸','腿后抽筋感']},
+  {id:'cableCrunch', name:'缆绳卷腹',  t:'3×12-15', tm:'2-1-1-0', rs:'45s', tips:'髋不动 · 脊柱卷 · 吐气卷起', bad:'髋摆动 · 用背拉 · 重量太大下背酸', feel:['上腹酸','下背酸','脖子酸']},
+  {id:'latPulldown', name:'高位下拉机（宽握）', t:'3×10-12', tm:'2-1-1-0', rs:'75s', tips:'先沉肩再拉 · 肘画弧 · 拉到锁骨', bad:'后仰>20° · 耸肩 · 拉到脖子后', feel:['背阔酸','二头酸','斜方酸','肩前不适']},
+  {id:'pecFly',      name:'蝴蝶机夹胸',    t:'3×12-15', tm:'2-1-1-0', rs:'60s', tips:'肘微屈固定 · 抱大树 · 中间停', bad:'重量太大肘变形 · 含胸', feel:['胸内侧酸','三头酸','肩前不适']},
+  {id:'legExt',      name:'坐姿腿屈伸机', t:'3×10-12', tm:'2-0-1-0', rs:'60s', tips:'抬至水平即可 · 控制不甩', bad:'甩腿 · 抬太高锁死', feel:['股四酸','膝盖不适']},
+  {id:'facePull',    name:'面拉（龙门架）',t:'3×12-15', tm:'2-1-1-0', rs:'45s', tips:'肘平肩 · 拉到耳旁 · 后旋腕', bad:'肘下沉 · 拉向脖子 · 含胸', feel:['肩后束酸','上背酸','斜方酸']},
+  {id:'plank',       name:'平板支撑',       t:'3×30-45秒', tm:'——', rs:'45s', tips:'头-臀-跟直线 · 核心收紧', bad:'塌腰 · 屁股高 · 憋气', feel:['腹酸','下背酸','肩酸']}
+];
+const M = {}; EX.forEach(e=>M[e.id]=e);
+
+const CARDIO = ['没做','跑步机','椭圆机','划船机','单车','爬楼机'];
+const CDUR = ['5分','10分','15分','20分','25分','30分'];
+
+const SCALES = [
+  {l:'消耗感', o:['很轻松','适中','有点累','很累','被掏空']},
+  {l:'发力感', o:['没找到','轻微','明显','精准命中']},
+  {l:'动作质量',o:['生疏','还行','流畅','完美']},
+  {l:'满意度', o:['不满意','还行','满意','非常满意']}
+];
+
+const SESSIONS = [
+  {wk:1,n:1,tt:'训练A · 推偏重', note:'找发力感为主，选让最后2次稍费力的重量', isA:true, exs:['legPress','chestPress','row','shPress','legCurl','cableCrunch']},
+  {wk:1,n:2,tt:'训练B · 拉偏重', note:'感受目标肌群，同重量起步不心急', isA:false, exs:['legPress','latPulldown','pecFly','legExt','facePull','plank']},
+  {wk:2,n:3,tt:'训练A · 推偏重', note:'尝试+2.5-5kg或+1-2次，优先保证动作标准', isA:true, exs:['legPress','chestPress','row','shPress','legCurl','cableCrunch']},
+  {wk:2,n:4,tt:'训练B · 拉偏重', note:'增重或增次，动作质量不下降', isA:false, exs:['legPress','latPulldown','pecFly','legExt','facePull','plank']},
+  {wk:3,n:5,tt:'训练A · 推偏重', note:'冲刺！推到W1上限，允许递减组', isA:true, exs:['legPress','chestPress','row','shPress','legCurl','cableCrunch']},
+  {wk:3,n:6,tt:'训练B · 拉偏重', note:'Cycle1最后一练！总结3个问题', isA:false, exs:['legPress','latPulldown','pecFly','legExt','facePull','plank']}
+];
+
+// ═══════════ STATE ═══════════
+const KEY = 'hermes_fitness_c1';
+let state = loadState();
+let currentSession = state.currentSession || 0; // index into SESSIONS
+
+function defaultState() {
+  const data = {};
+  SESSIONS.forEach((s, si) => {
+    const sk = `s${si}`;
+    data[sk] = { pre:{}, exs:{}, cardio:{type:'',dur:''}, stretch:{}, scales:{}, notes:'' };
+    s.exs.forEach(eid => {
+      data[sk].exs[eid] = { sets:[
+        {w:'',r:'',rpe:'',done:false,feel:[]},
+        {w:'',r:'',rpe:'',done:false,feel:[]},
+        {w:'',r:'',rpe:'',done:false,feel:[]}
+      ]};
+    });
+  });
+  data.currentSession = 0;
+  return data;
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return defaultState();
+}
+
+function saveState() {
+  state.currentSession = currentSession;
+  localStorage.setItem(KEY, JSON.stringify(state));
+  document.getElementById('saveIndicator').textContent = '✓ 已自动保存';
+  setTimeout(() => {
+    const el = document.getElementById('saveIndicator');
+    if (el) el.textContent = '🔄 自动保存中';
+  }, 2000);
+}
+
+// Auto-save debounce
+let saveTimer;
+function autoSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveState, 300); }
+
+// ═══════════ RENDER ═══════════
+function render() {
+  const s = SESSIONS[currentSession];
+  const pre = state[`s${currentSession}`].pre;
+  const exsData = state[`s${currentSession}`].exs;
+  const cardio = state[`s${currentSession}`].cardio;
+  const stretch = state[`s${currentSession}`].stretch;
+  const scales = state[`s${currentSession}`].scales;
+  const notes = state[`s${currentSession}`].notes;
+
+  // Session buttons
+  let sesHtml = SESSIONS.map((sess, i) => {
+    let cls = 'session-btn';
+    if (i === currentSession) cls += ' active';
+    else if (state[`s${i}`].pre?.done) cls += ' done';
+    return `<div class="${cls}" data-si="${i}">第${sess.n}次</div>`;
+  }).join('');
+
+  // Pre-check
+  const preItems = ['睡好≥7h','精力足','身体无异样','练前吃了碳水+蛋白','饮水充足'];
+  const preHtml = preItems.map(p => {
+    const id = `pre_${currentSession}_${p}`;
+    const checked = pre[p] ? 'checked' : '';
+    return `<label><input type="checkbox" id="${id}" ${checked} data-pre="${p}">${p}</label>`;
+  }).join('');
+
+  // RPE legend
+  const rpeKey = RPE_DATA.map(r => `<span><span class="rpe-dot" style="background:${r.c}">${r.v}</span>${r.t}</span>`).join('');
+
+  // Exercises
+  let exHtml = '';
+  s.exs.forEach((eid, ei) => {
+    const e = M[eid];
+    const ed = exsData[eid];
+    if (!ed) return;
+    let rowsHtml = '';
+    [0,1,2].forEach(setIdx => {
+      const sd = ed.sets[setIdx] || {w:'',r:'',rpe:'',done:false,feel:[]};
+      const rpeOpts = RPE_DATA.map(r => {
+        const id = `rpe_${currentSession}_${eid}_${setIdx}_${r.v}`;
+        const chk = sd.rpe == r.v ? 'checked' : '';
+        return `<label for="${id}"><input type="radio" id="${id}" name="rpe_${currentSession}_${eid}_${setIdx}" value="${r.v}" ${chk} data-rpe="${r.v}">${r.v}</label>`;
+      }).join('');
+      const doneChk = sd.done ? 'checked' : '';
+      const feelHtml = e.feel.map(f => {
+        const fid = `feel_${currentSession}_${eid}_${setIdx}_${f}`;
+        const chk = sd.feel.includes(f) ? 'checked' : '';
+        return `<label for="${fid}"><input type="checkbox" id="${fid}" ${chk} data-feel="${f}">${f}</label>`;
+      }).join('');
+      rowsHtml += `<div class="set-row" data-eid="${eid}" data-set="${setIdx}">
+        <span class="set-num">${setIdx+1}</span>
+        <span class="set-weight"><input type="text" inputmode="decimal" value="${sd.w}" data-field="w" placeholder="kg"><span class="u">kg</span></span>
+        <span class="set-reps"><input type="text" inputmode="numeric" value="${sd.r}" data-field="r" placeholder="次"><span class="u">次</span></span>
+        <div class="rpe-group">${rpeOpts}</div>
+        <input type="checkbox" class="set-done" ${doneChk} data-field="done">
+      </div>
+      <div class="feel-section">${feelHtml}</div>`;
+    });
+
+    exHtml += `<div class="card">
+      <div class="card-header">
+        <span class="card-num">${ei+1}</span>
+        <span class="card-name">${e.name}</span>
+        <span class="card-target">${e.t}</span>
+        <span class="card-meta">⏱${e.tm} · 休${e.rs}</span>
+      </div>
+      <div class="card-tips">✅ ${e.tips}</div>
+      <div class="card-bad">⚠️ ${e.bad}</div>
+      <div class="rpe-legend">${rpeKey}</div>
+      <div class="sets">${rowsHtml}</div>
+    </div>`;
+  });
+
+  // Cardio
+  const cardioHtml = CARDIO.map(c => {
+    const id = `cardio_t_${currentSession}_${c}`;
+    const chk = cardio.type === c ? 'checked' : '';
+    return `<label for="${id}"><input type="radio" id="${id}" name="cardio_type_${currentSession}" value="${c}" ${chk}>${c}</label>`;
+  }).join('');
+  const durHtml = CDUR.map(d => {
+    const id = `cardio_d_${currentSession}_${d}`;
+    const chk = cardio.dur === d ? 'checked' : '';
+    return `<label for="${id}"><input type="radio" id="${id}" name="cardio_dur_${currentSession}" value="${d}" ${chk}>${d}</label>`;
+  }).join('');
+
+  // Stretch
+  const stMuscles = s.isA ? ['胸大肌','三角肌后束','三头肌'] : ['背阔肌','股四头肌','腘绳肌','臀大肌'];
+  const stHtml = stMuscles.map(m => {
+    const id = `st_${currentSession}_${m}`;
+    const chk = stretch[m] ? 'checked' : '';
+    return `<label for="${id}"><input type="checkbox" id="${id}" ${chk} data-st="${m}">${m}</label>`;
+  }).join('');
+  const stDone = stretch['_done'] ? 'checked' : '';
+  const stMiss = stretch['_miss'] ? 'checked' : '';
+
+  // Scales
+  const scaleHtml = SCALES.map(sc => {
+    const val = scales[sc.l] || '';
+    const opts = sc.o.map(o => {
+      const id = `sc_${currentSession}_${sc.l}_${o}`;
+      const chk = val === o ? 'checked' : '';
+      return `<label for="${id}"><input type="radio" id="${id}" name="sc_${currentSession}_${sc.l}" value="${o}" ${chk}>${o}</label>`;
+    }).join('');
+    return `<div class="scale-item"><span class="sl">${sc.l}</span><div class="scale-opts">${opts}</div></div>`;
+  }).join('');
+
+  const appHtml = `<div class="app-header">
+    <h1>🏋️ Cycle 1 · 第${s.n}次</h1>
+    <div class="sub">${s.tt} · 第${s.wk}/3周</div>
+  </div>
+  <div class="session-bar">${sesHtml}</div>
+  <div id="saveIndicator" class="save-indicator">🔄 自动保存中</div>
+  <div class="note-banner">📌 ${s.note}</div>
+  <div class="pre-section">
+    <h3>训练前状态</h3>
+    <div class="pre-grid">${preHtml}</div>
+  </div>
+  ${exHtml}
+  <div class="bottom-section">
+    <h3>🏃 有氧</h3>
+    <div class="tag-group">${cardioHtml}</div>
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+      <span style="font-size:14px;color:#888;">时长：</span>
+      <div class="tag-group" style="margin-bottom:0;">${durHtml}</div>
+    </div>
+    <h3>🧘 拉伸</h3>
+    <div class="tag-group">${stHtml}</div>
+    <div class="tag-group">
+      <label><input type="checkbox" ${stDone} data-st-done> 每个保持15-30s ✅</label>
+      <label><input type="checkbox" ${stMiss} data-st-miss> 没做</label>
+    </div>
+    <h3>训练感受</h3>
+    <div class="scales">${scaleHtml}</div>
+    <div class="notes-area">
+      <textarea placeholder="自由记录（非必填）：问题、异常、想调整的方向…">${notes || ''}</textarea>
+    </div>
+  </div>
+  <div style="height:60px"></div>`;
+
+  document.getElementById('app').innerHTML = appHtml;
+  bindEvents();
+}
+
+// ═══════════ EVENTS ═══════════
+function bindEvents() {
+  // Session switch
+  document.querySelectorAll('.session-btn').forEach(el => {
+    el.addEventListener('click', () => {
+      currentSession = parseInt(el.dataset.si);
+      render();
+    });
+  });
+
+  // Pre-check
+  document.querySelectorAll('[data-pre]').forEach(el => {
+    el.addEventListener('change', () => {
+      const s = SESSIONS[currentSession];
+      const pre = state[`s${currentSession}`].pre;
+      pre[el.dataset.pre] = el.checked;
+      // Mark session as started
+      if (!pre.done && el.checked) pre.done = true;
+      autoSave();
+    });
+  });
+
+  // Weight/reps inputs
+  document.querySelectorAll('.set-weight input, .set-reps input').forEach(el => {
+    el.addEventListener('input', () => {
+      const row = el.closest('.set-row');
+      const eid = row.dataset.eid;
+      const setIdx = parseInt(row.dataset.set);
+      const field = el.dataset.field;
+      state[`s${currentSession}`].exs[eid].sets[setIdx][field] = el.value;
+      autoSave();
+    });
+  });
+
+  // RPE radio
+  document.querySelectorAll('.rpe-group input').forEach(el => {
+    el.addEventListener('change', () => {
+      if (!el.checked) return;
+      const row = el.closest('.set-row');
+      const eid = row.dataset.eid;
+      const setIdx = parseInt(row.dataset.set);
+      const val = parseInt(el.value);
+      state[`s${currentSession}`].exs[eid].sets[setIdx].rpe = val;
+      autoSave();
+    });
+  });
+
+  // Done checkbox
+  document.querySelectorAll('.set-done').forEach(el => {
+    el.addEventListener('change', () => {
+      const row = el.closest('.set-row');
+      const eid = row.dataset.eid;
+      const setIdx = parseInt(row.dataset.set);
+      state[`s${currentSession}`].exs[eid].sets[setIdx].done = el.checked;
+      autoSave();
+    });
+  });
+
+  // Feel tags
+  document.querySelectorAll('[data-feel]').forEach(el => {
+    el.addEventListener('change', () => {
+      const row = el.closest('.set-row') || el.closest('.card').querySelector('.set-row');
+      // Find the correct set-row by traversing up
+      const card = el.closest('.card');
+      const feelDiv = el.closest('.feel-section');
+      const prevSet = feelDiv.previousElementSibling;
+      const eid = prevSet ? prevSet.dataset.eid : card.querySelector('.set-row').dataset.eid;
+      const setIdx = prevSet ? parseInt(prevSet.dataset.set) : 0;
+      
+      // Actually, let me use a more reliable approach
+      const allSetRows = card.querySelectorAll('.set-row');
+      const allFeelSections = card.querySelectorAll('.feel-section');
+      let foundIdx = -1;
+      allFeelSections.forEach((fs, idx) => {
+        if (fs === feelDiv) foundIdx = idx;
+      });
+      const targetRow = allSetRows[foundIdx];
+      if (targetRow) {
+        const eid2 = targetRow.dataset.eid;
+        const setIdx2 = parseInt(targetRow.dataset.set);
+        const feel = el.dataset.feel;
+        const feels = state[`s${currentSession}`].exs[eid2].sets[setIdx2].feel;
+        if (el.checked && !feels.includes(feel)) feels.push(feel);
+        else if (!el.checked) {
+          const idx = feels.indexOf(feel);
+          if (idx > -1) feels.splice(idx, 1);
+        }
+        autoSave();
+      }
+    });
+  });
+
+  // Cardio type
+  document.querySelectorAll('[name^="cardio_type_"]').forEach(el => {
+    el.addEventListener('change', () => {
+      if (el.checked) { state[`s${currentSession}`].cardio.type = el.value; autoSave(); }
+    });
+  });
+
+  // Cardio dur
+  document.querySelectorAll('[name^="cardio_dur_"]').forEach(el => {
+    el.addEventListener('change', () => {
+      if (el.checked) { state[`s${currentSession}`].cardio.dur = el.value; autoSave(); }
+    });
+  });
+
+  // Stretch
+  document.querySelectorAll('[data-st]').forEach(el => {
+    el.addEventListener('change', () => {
+      state[`s${currentSession}`].stretch[el.dataset.st] = el.checked;
+      autoSave();
+    });
+  });
+  document.querySelectorAll('[data-st-done]').forEach(el => {
+    el.addEventListener('change', () => {
+      state[`s${currentSession}`].stretch['_done'] = el.checked;
+      if (el.checked) state[`s${currentSession}`].stretch['_miss'] = false;
+      autoSave();
+    });
+  });
+  document.querySelectorAll('[data-st-miss]').forEach(el => {
+    el.addEventListener('change', () => {
+      state[`s${currentSession}`].stretch['_miss'] = el.checked;
+      if (el.checked) state[`s${currentSession}`].stretch['_done'] = false;
+      autoSave();
+    });
+  });
+
+  // Scales
+  document.querySelectorAll('[name^="sc_"]').forEach(el => {
+    el.addEventListener('change', () => {
+      if (el.checked) {
+        // Extract scale name from the radio name
+        const name = el.name;
+        const idx = name.indexOf('_', name.indexOf('_')+1)+1;
+        const scaleName = name.substring(idx);
+        state[`s${currentSession}`].scales[scaleName] = el.value;
+        autoSave();
+      }
+    });
+  });
+
+  // Notes
+  document.querySelector('.notes-area textarea')?.addEventListener('input', (e) => {
+    state[`s${currentSession}`].notes = e.target.value;
+    autoSave();
+  });
+}
+
+// ═══════════ GO ═══════════
+render();
+</script>
+</body>
+</html>
