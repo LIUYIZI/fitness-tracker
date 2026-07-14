@@ -2,12 +2,12 @@
   "currentSession": 0,
   "s0": {
     "pre": {
-      "精力足": true,
+      "精力足": false,
       "done": true,
       "练前吃了碳水+蛋白": true,
       "身体无异样": true,
       "饮水充足": true,
-      "睡好≥7h": true
+      "睡好≥7h": false
     },
     "exs": {
       "legPress": {
