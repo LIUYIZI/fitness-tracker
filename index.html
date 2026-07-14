@@ -312,10 +312,10 @@ const GITEE_API=`https://gitee.com/api/v5/repos/${GIT_OWNER}/${GIT_REPO}/content
 
 async function syncPull() {
   try {
-    const ctrl = new AbortController();
-    setTimeout(() => ctrl.abort(), 5000);
+    const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    if (ctrl) setTimeout(() => ctrl.abort(), 5000);
     const res = await fetch(`${GITEE_API}?access_token=${GIT_TOKEN}`, {
-      signal: ctrl.signal,
+      signal: ctrl ? ctrl.signal : undefined,
       headers: { 'Accept': 'application/json' }
     });
     if (!res.ok) { if (res.status === 404) { updateSyncStatus('☁️ 云端空'); return; } throw new Error('HTTP ' + res.status); }
@@ -348,10 +348,10 @@ async function syncPush() {
     formData.append('message', `sync ${new Date().toISOString().slice(0,16)}`);
     formData.append('content', content);
     if (gitSha) formData.append('sha', gitSha);
-    const putCtrl = new AbortController();
-    setTimeout(() => putCtrl.abort(), 5000);
+    const putCtrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    if (putCtrl) setTimeout(() => putCtrl.abort(), 5000);
     const res = await fetch(GITEE_API, {
-      signal: putCtrl.signal,
+      signal: putCtrl ? putCtrl.signal : undefined,
       method: 'POST',
       headers: { 'Accept': 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
       body: formData
