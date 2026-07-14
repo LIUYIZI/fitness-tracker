@@ -175,8 +175,8 @@ input:focus { outline: none; }
 .notes-area { margin-top: 6px; }
 .notes-area textarea {
   width: 100%; font-size: 16px; padding: 10px 12px; border-radius: 8px;
-  border: 1.5px solid #d0d4dc; resize: vertical; min-height: 60px;
-  font-family: inherit; background: #fafbff;
+  border: 1.5px solid #d0d4dc; min-height: 80px; overflow: hidden;
+  font-family: inherit; background: #fafbff; resize: none;
 }
 
 /* save btn */
@@ -606,9 +606,11 @@ function render() {
     return `<label for="${id}"><input type="radio" id="${id}" name="cardio_dur_${currentSession}" value="${d}" ${chk}>${d}</label>`;
   }).join('');
 
-  // Stretch
-  const stMuscles = s.isA ? ['胸大肌','三角肌后束','三头肌'] : ['背阔肌','股四头肌','腘绳肌','臀大肌'];
-  const stHtml = stMuscles.map(m => {
+  // Stretch (show exercises, not muscle names)
+  const stExercises = s.isA
+    ? ['胸大肌拉伸：扶墙前倾，15-30秒/侧','三角肌拉伸：横臂拉肘，15-30秒/侧','三头肌拉伸：过顶推肘，15-30秒/侧']
+    : ['背阔肌拉伸：扶架后坐，15-30秒','股四头肌拉伸：拉踝贴臀，15-30秒/侧','腘绳肌拉伸：坐姿前倾，15-30秒/侧','臀大肌拉伸：仰卧抱膝，15-30秒/侧'];
+  const stHtml = stExercises.map(m => {
     const id = `st_${currentSession}_${m}`;
     const chk = stretch[m] ? 'checked' : '';
     return `<label for="${id}"><input type="checkbox" id="${id}" ${chk} data-st="${m}">${m}</label>`;
@@ -800,11 +802,19 @@ function bindEvents() {
     });
   });
 
-  // Notes
-  document.querySelector('.notes-area textarea')?.addEventListener('input', (e) => {
-    state[`s${currentSession}`].notes = e.target.value;
-    autoSave();
-  });
+  // Notes — auto-resize + save
+  const ta = document.querySelector('.notes-area textarea');
+  if (ta) {
+    // Resize to fit existing content
+    ta.style.height = 'auto';
+    ta.style.height = ta.scrollHeight + 'px';
+    ta.addEventListener('input', (e) => {
+      state[`s${currentSession}`].notes = e.target.value;
+      e.target.style.height = 'auto';
+      e.target.style.height = e.target.scrollHeight + 'px';
+      autoSave();
+    });
+  }
 
   // Date
   document.getElementById('trainDate')?.addEventListener('change', (e) => {
