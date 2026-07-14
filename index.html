@@ -290,10 +290,11 @@ function loadState() {
 function saveState() {
   state.currentSession = currentSession;
   localStorage.setItem(KEY, JSON.stringify(state));
-  document.getElementById('saveIndicator').textContent = '✓ 已自动保存';
+  const el = document.getElementById('saveIndicator');
+  if (el) el.textContent = '✓ 已保存 · 已存入手机本地';
   setTimeout(() => {
-    const el = document.getElementById('saveIndicator');
-    if (el) el.textContent = '🔄 自动保存中';
+    const el2 = document.getElementById('saveIndicator');
+    if (el2) el2.innerHTML = '🔄 自动保存中 · <span id="pushStatus">本地保存</span> <span id="retrySync" style="color:#4a6cf7;font-weight:600;cursor:pointer;text-decoration:underline;">重试同步</span>';
   }, 2000);
 }
 
@@ -309,10 +310,13 @@ let gitSha = null;
 
 async function syncPull() {
   try {
+    const ctrl = new AbortController();
+    setTimeout(() => ctrl.abort(), 5000);
     const res = await fetch(`https://api.github.com/repos/${GIT_REPO}/contents/${GIT_PATH}`, {
+      signal: ctrl.signal,
       headers: { 'Authorization': `token ${GIT_TOKEN}`, 'Accept': 'application/vnd.github.v3+json' }
     });
-    if (!res.ok) { if (res.status === 404) return; throw new Error('HTTP ' + res.status); }
+    if (!res.ok) { if (res.status === 404) { updateSyncStatus('☁️ 云端空'); return; } throw new Error('HTTP ' + res.status); }
     const d = await res.json();
     gitSha = d.sha;
     const remote = JSON.parse(atob(d.content));
@@ -337,15 +341,21 @@ async function syncPull() {
 async function syncPush() {
   try {
     saveState();
+    const ctrl = new AbortController();
+    setTimeout(() => ctrl.abort(), 5000);
     // Get current SHA first
     const res = await fetch(`https://api.github.com/repos/${GIT_REPO}/contents/${GIT_PATH}`, {
+      signal: ctrl.signal,
       headers: { 'Authorization': `token ${GIT_TOKEN}`, 'Accept': 'application/vnd.github.v3+json' }
     });
     if (res.ok) { const d = await res.json(); gitSha = d.sha; }
     const content = btoa(unescape(encodeURIComponent(JSON.stringify(state))));
     const body = { message: `sync ${new Date().toISOString().slice(0,16)}`, content };
     if (gitSha) body.sha = gitSha;
+    const putCtrl = new AbortController();
+    setTimeout(() => putCtrl.abort(), 5000);
     const putRes = await fetch(`https://api.github.com/repos/${GIT_REPO}/contents/${GIT_PATH}`, {
+      signal: putCtrl.signal,
       method: 'PUT',
       headers: { 'Authorization': `token ${GIT_TOKEN}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
@@ -356,7 +366,7 @@ async function syncPush() {
       updateSyncStatus('☁️ 已同步');
     }
   } catch(e) {
-    updateSyncStatus('☁️ 同步失败');
+    updateSyncStatus('☁️ 离线模式');
   }
 }
 
@@ -509,10 +519,10 @@ function render() {
 
   const appHtml = `<div class="app-header">
     <h1>🏋️ Cycle 1 · 第${s.n}次</h1>
-    <div class="sub">${s.tt} · 第${s.wk}/3周 · <span id="syncStatus">☁️ 同步中...</span></div>
+    <div class="sub">${s.tt} · 第${s.wk}/3周 · <span id="syncStatus">☁️ 离线模式</span></div>
   </div>
   <div class="session-bar">${sesHtml}</div>
-  <div id="saveIndicator" class="save-indicator">🔄 自动保存中</div>
+  <div id="saveIndicator" class="save-indicator">🔄 自动保存中 · <span id="pushStatus">本地保存</span> <span id="retrySync" style="color:#4a6cf7;font-weight:600;cursor:pointer;text-decoration:underline;">重试同步</span></div>
   <div class="note-banner">📌 ${s.note}</div>
   <div class="pre-section">
     <h3>训练前状态</h3>
@@ -701,6 +711,12 @@ function bindEvents() {
   document.getElementById('exportBtn')?.addEventListener('click', exportData);
   document.getElementById('importBtn')?.addEventListener('click', () => document.getElementById('importFile')?.click());
   document.getElementById('importFile')?.addEventListener('change', importData);
+
+  // ═══ Retry sync ═══
+  document.getElementById('retrySync')?.addEventListener('click', () => {
+    updateSyncStatus('☁️ 同步中...');
+    syncPush().then(() => { if (document.getElementById('syncStatus')?.textContent === '☁️ 同步中...') updateSyncStatus('☁️ 离线模式'); });
+  });
 }
 
 // ═══════════ GO ═══════════
