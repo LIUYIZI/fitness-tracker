@@ -153,7 +153,10 @@
       "_done": true,
       "_miss": false
     },
-    "scales": {},
+    "scales": {
+      "消耗感": "很轻松",
+      "发力感": "明显"
+    },
     "notes": ""
   },
   "s1": {
