@@ -299,6 +299,7 @@ const GITEE_API = 'https://gitee.com/api/v5/repos/luiyizi/fitness-tracker/conten
 let syncStatus = 'local'; // 'local' | 'syncing' | 'synced' | 'error'
 let cloudSHA = null;
 let lastCloudData = null;
+let lastSyncError = '';
 
 // Count filled sessions in a state object
 function countFilledSessions(data) {
@@ -384,6 +385,7 @@ async function pushToCloud(data) {
     return true;
   } catch(e) {
     console.log('Cloud push failed:', e.message);
+    lastSyncError = e.message;
     setSyncStatus('error');
     return false;
   }
@@ -392,7 +394,10 @@ async function pushToCloud(data) {
 // Merge cloud data with local: use whichever has more filled sessions
 async function mergeCloudData() {
   const cloud = await fetchFromCloud();
-  if (!cloud) return; // No cloud data, keep local
+  if (!cloud) {
+    setSyncStatus('local');
+    return; // No cloud data, keep local
+  }
 
   const localCount = countFilledSessions(state);
   const cloudCount = countFilledSessions(cloud);
@@ -407,11 +412,14 @@ async function mergeCloudData() {
     console.log('Loaded from cloud (' + cloudCount + ' vs local ' + localCount + ' sessions)');
   } else if (localCount > cloudCount) {
     // Local is newer: push to cloud
-    setSyncStatus('synced');
-    pushToCloud(state);
     console.log('Local is newer, pushing to cloud');
+    pushToCloud(state);
   } else {
     setSyncStatus('synced');
+    // Even if counts match, try pushing in case data differs
+    // (e.g. same number of sessions but different values)
+    console.log('Count match, pushing to ensure sync');
+    pushToCloud(state);
   }
 }
 
@@ -427,7 +435,7 @@ function updateSyncIndicator() {
     'local': '🔄 自动保存中 · <span style="color:#f5a623">☁️ 云端待同步</span>',
     'syncing': '🔄 自动保存中 · <span style="color:#4a6cf7">☁️ 同步中...</span>',
     'synced': '🔄 自动保存中 · <span style="color:#2d7d46">☁️ 已同步</span>',
-    'error': '🔄 自动保存中 · <span style="color:#e53935">⚠️ 同步失败</span> <span id="retrySync" style="color:#4a6cf7;font-weight:600;cursor:pointer;text-decoration:underline;">重试</span>'
+    'error': '🔄 自动保存中 · <span style="color:#e53935">⚠️ 同步失败</span> <span id="retrySync" style="color:#4a6cf7;font-weight:600;cursor:pointer;text-decoration:underline;">重试</span><br><span style="font-size:10px;color:#999;">' + (lastSyncError || '网络错误') + '</span>',
   };
   el.innerHTML = statusText[syncStatus] || statusText['local'];
   // Also update header icon
