@@ -557,10 +557,11 @@ function render() {
         const chk = sd.rpe == r.v ? 'checked' : '';
         return `<label for="${id}"><input type="radio" id="${id}" name="rpe_${currentSession}_${eid}_${setIdx}" value="${r.v}" ${chk} data-rpe="${r.v}">${r.v}</label>`;
       }).join('');
+      const isTimed = e.t.includes('秒');
       rowsHtml += `<div class="set-row" data-eid="${eid}" data-set="${setIdx}">
         <span class="set-num">${setIdx+1}</span>
         <span class="set-weight"><input type="text" inputmode="decimal" value="${sd.w}" data-field="w" placeholder="${weightPh}"><span class="u">${exUnit}</span></span>
-        <span class="set-reps"><input type="text" inputmode="numeric" value="${sd.r}" data-field="r" placeholder="${repHint}"><span class="u">次</span></span>
+        ${isTimed ? '' : `<span class="set-reps"><input type="text" inputmode="numeric" value="${sd.r}" data-field="r" placeholder="${repHint}"><span class="u">次</span></span>`}
         <div class="rpe-group">${rpeOpts}</div>
       </div>`;
     });
