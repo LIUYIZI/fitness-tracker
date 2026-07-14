@@ -285,8 +285,9 @@ function defaultState() {
   SESSIONS.forEach((s, si) => {
     const sk = `s${si}`;
     data[sk] = { pre:{}, exs:{}, cardio:{type:'',dur:''}, stretch:{}, scales:{}, notes:'' };
-    s.exs.forEach(eid => {
+    s.exs.forEach((eid, ei) => {
       data[sk].exs[eid] = {
+        order: ei + 1,
         sets:[
           {w:'',r:'',rpe:''},
           {w:'',r:'',rpe:''},
@@ -534,12 +535,18 @@ function render() {
   // RPE legend
   const rpeKey = RPE_DATA.map(r => `<span><span class="rpe-dot" style="background:${r.c}">${r.v}</span>${r.t}</span>`).join('');
 
-  // Exercises
+  // Exercises — sort by saved order
   let exHtml = '';
-  s.exs.forEach((eid, ei) => {
+  const exOrdered = s.exs.map((eid, ei) => {
+    const ed = exsData[eid] || {};
+    return { eid, order: ed.order || (ei + 1) };
+  }).sort((a, b) => a.order - b.order);
+
+  exOrdered.forEach(({eid}, displayIdx) => {
     const e = M[eid];
     const ed = exsData[eid];
     if (!ed) return;
+    const savedOrder = ed.order || (displayIdx + 1);
     let rowsHtml = '';
     const dw = (s.dw||{})[eid] || '';
     // Rep hint: show target rep count (e.g. "12" from "10-12", "45秒" from "30-45秒")
@@ -576,9 +583,9 @@ function render() {
 
     exHtml += `<div class="card">
       <div class="card-header">
-        <span class="card-num">${ei+1}</span>
+        <span class="card-num">${displayIdx+1}</span>
         <span class="card-name">${e.name}</span>
-        <select data-eid="${eid}" data-field="order" style="font-size:12px;padding:2px 4px;border:1.5px solid #d0d4dc;border-radius:6px;background:#fafbff;margin-left:auto;color:#888;">${[1,2,3,4,5,6].map(i => `<option value="${i}" ${i===(ei+1)?'selected':''}>${i}</option>`).join('')}</select>
+        <select data-eid="${eid}" data-field="order" style="font-size:12px;padding:2px 4px;border:1.5px solid #d0d4dc;border-radius:6px;background:#fafbff;margin-left:auto;color:#888;">${[1,2,3,4,5,6].map(i => `<option value="${i}" ${i===savedOrder?'selected':''}>${i}</option>`).join('')}</select>
       </div>
       <div class="card-meta-line">
         <span class="card-target">${e.t}</span>
@@ -857,6 +864,11 @@ async function initCloud() {
     if (!state[sk].exs || Object.keys(state[sk].exs).length === 0) {
       state[sk].exs = dflt[sk].exs;
     }
+    // Ensure order field exists on each exercise
+    const exs = state[sk].exs;
+    Object.keys(exs).forEach((eid, ei) => {
+      if (!exs[eid].order) exs[eid].order = ei + 1;
+    });
   });
   // Don't jump to page 1 — use localStorage currentSession (cloud's may be stale)
   // Migrate old per-set feel to new per-exercise feel
