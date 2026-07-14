@@ -849,7 +849,9 @@ async function initCloud() {
       state[sk].exs = dflt[sk].exs;
     }
   });
-  currentSession = state.currentSession || 0;
+  // Don't jump to page 1 — use localStorage currentSession (cloud's may be stale)
+  currentSession = currentSession || state.currentSession || 0;
+  state.currentSession = currentSession;
   localStorage.setItem(KEY, JSON.stringify(state));
   setSyncStatus('synced');
   render();
