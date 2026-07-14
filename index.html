@@ -301,6 +301,41 @@ function saveState() {
 let saveTimer;
 function autoSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveState, 300); }
 
+// ═══════════ EXPORT / IMPORT ═══════════
+function exportData() {
+  saveState(); // flush any pending saves
+  const data = JSON.stringify(state, null, 2);
+  const blob = new Blob([data], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `fitness-cycle1-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  alert('✅ 数据已导出！把文件发到电脑，点"导入数据"加载。');
+}
+
+function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      if (!imported || typeof imported !== 'object') throw new Error('格式错误');
+      state = imported;
+      currentSession = state.currentSession || 0;
+      localStorage.setItem(KEY, JSON.stringify(state));
+      alert('✅ 导入成功！共 ' + Object.keys(state).filter(k=>k.startsWith('s')).length + ' 次训练数据已加载。');
+      render();
+    } catch(err) {
+      alert('❌ 导入失败：文件格式不正确 (' + err.message + ')');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = ''; // reset so same file can be re-imported
+}
+
 // ═══════════ RENDER ═══════════
 function render() {
   const s = SESSIONS[currentSession];
@@ -436,6 +471,11 @@ function render() {
       <textarea placeholder="自由记录（非必填）：问题、异常、想调整的方向…">${notes || ''}</textarea>
     </div>
   </div>
+  <div style="display:flex;gap:8px;margin:6px 14px 10px;">
+    <button id="exportBtn" style="flex:1;padding:10px;border:1.5px solid #4a6cf7;background:#fff;color:#4a6cf7;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">📤 导出数据</button>
+    <button id="importBtn" style="flex:1;padding:10px;border:1.5px solid #2d7d46;background:#fff;color:#2d7d46;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">📥 导入数据</button>
+  </div>
+  <input type="file" id="importFile" accept=".json" style="display:none">
   <div style="height:60px"></div>`;
 
   document.getElementById('app').innerHTML = appHtml;
@@ -589,6 +629,11 @@ function bindEvents() {
     state[`s${currentSession}`].notes = e.target.value;
     autoSave();
   });
+
+  // ═══ Export / Import ═══
+  document.getElementById('exportBtn')?.addEventListener('click', exportData);
+  document.getElementById('importBtn')?.addEventListener('click', () => document.getElementById('importFile')?.click());
+  document.getElementById('importFile')?.addEventListener('change', importData);
 }
 
 // ═══════════ GO ═══════════
