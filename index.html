@@ -286,11 +286,14 @@ function defaultState() {
     const sk = `s${si}`;
     data[sk] = { pre:{}, exs:{}, cardio:{type:'',dur:''}, stretch:{}, scales:{}, notes:'' };
     s.exs.forEach(eid => {
-      data[sk].exs[eid] = { sets:[
-        {w:'',r:'',rpe:'',feel:[]},
-        {w:'',r:'',rpe:'',feel:[]},
-        {w:'',r:'',rpe:'',feel:[]}
-      ]};
+      data[sk].exs[eid] = {
+        sets:[
+          {w:'',r:'',rpe:''},
+          {w:'',r:'',rpe:''},
+          {w:'',r:'',rpe:''}
+        ],
+        feel:[]
+      };
     });
   });
   data.currentSession = 0;
@@ -545,7 +548,7 @@ function render() {
     if (rm) repHint = rm[2] + (rm[3] || '');
     // Unit: timed exercises (plank) use "秒", others use "kg"
     [0,1,2].forEach(setIdx => {
-      const sd = ed.sets[setIdx] || {w:'',r:'',rpe:'',feel:[]};
+      const sd = ed.sets[setIdx] || {w:'',r:'',rpe:''};
       // For untrained sessions: show planned weight as placeholder hint, NOT as pre-filled value
       const weightPh = sd.w ? '' : (dw || '');
       const exUnit = e.t.includes('秒') ? '秒' : 'kg';
@@ -554,19 +557,21 @@ function render() {
         const chk = sd.rpe == r.v ? 'checked' : '';
         return `<label for="${id}"><input type="radio" id="${id}" name="rpe_${currentSession}_${eid}_${setIdx}" value="${r.v}" ${chk} data-rpe="${r.v}">${r.v}</label>`;
       }).join('');
-      const feelHtml = e.feel.map(f => {
-        const fid = `feel_${currentSession}_${eid}_${setIdx}_${f}`;
-        const chk = sd.feel.includes(f) ? 'checked' : '';
-        return `<label for="${fid}"><input type="checkbox" id="${fid}" ${chk} data-feel="${f}">${f}</label>`;
-      }).join('');
       rowsHtml += `<div class="set-row" data-eid="${eid}" data-set="${setIdx}">
         <span class="set-num">${setIdx+1}</span>
         <span class="set-weight"><input type="text" inputmode="decimal" value="${sd.w}" data-field="w" placeholder="${weightPh}"><span class="u">${exUnit}</span></span>
         <span class="set-reps"><input type="text" inputmode="numeric" value="${sd.r}" data-field="r" placeholder="${repHint}"><span class="u">次</span></span>
         <div class="rpe-group">${rpeOpts}</div>
-      </div>
-      <div class="feel-section">${feelHtml}</div>`;
+      </div>`;
     });
+
+    // Per-exercise feel (moved out of per-set loop — one feel section per exercise)
+    const exFeel = ed.feel || [];
+    const feelHtml = e.feel.map(f => {
+      const fid = `feel_${currentSession}_${eid}_${f}`;
+      const chk = exFeel.includes(f) ? 'checked' : '';
+      return `<label for="${fid}"><input type="checkbox" id="${fid}" ${chk} data-feel="${f}">${f}</label>`;
+    }).join('');
 
     exHtml += `<div class="card">
       <div class="card-header">
@@ -582,6 +587,7 @@ function render() {
       ${(s.tg||{})[eid] ? `<div style="font-size:13px;color:#1a6fb5;padding:0 16px 6px;border-left:3px solid #1a6fb5;margin:0 16px 8px;padding-left:10px;background:#f0f6ff;border-radius:0 4px 4px 0;">🎯 ${s.tg[eid]}</div>` : ''}
       <div class="rpe-legend">${rpeKey}</div>
       <div class="sets">${rowsHtml}</div>
+      <div class="feel-section" style="padding:0 16px 10px;">${feelHtml}</div>
     </div>`;
   });
 
@@ -728,37 +734,19 @@ function bindEvents() {
     });
   });
 
-  // Feel tags
+  // Feel tags (per exercise, not per set)
   document.querySelectorAll('[data-feel]').forEach(el => {
     el.addEventListener('change', () => {
-      const row = el.closest('.set-row') || el.closest('.card').querySelector('.set-row');
-      // Find the correct set-row by traversing up
       const card = el.closest('.card');
-      const feelDiv = el.closest('.feel-section');
-      const prevSet = feelDiv.previousElementSibling;
-      const eid = prevSet ? prevSet.dataset.eid : card.querySelector('.set-row').dataset.eid;
-      const setIdx = prevSet ? parseInt(prevSet.dataset.set) : 0;
-      
-      // Actually, let me use a more reliable approach
-      const allSetRows = card.querySelectorAll('.set-row');
-      const allFeelSections = card.querySelectorAll('.feel-section');
-      let foundIdx = -1;
-      allFeelSections.forEach((fs, idx) => {
-        if (fs === feelDiv) foundIdx = idx;
-      });
-      const targetRow = allSetRows[foundIdx];
-      if (targetRow) {
-        const eid2 = targetRow.dataset.eid;
-        const setIdx2 = parseInt(targetRow.dataset.set);
-        const feel = el.dataset.feel;
-        const feels = state[`s${currentSession}`].exs[eid2].sets[setIdx2].feel;
-        if (el.checked && !feels.includes(feel)) feels.push(feel);
-        else if (!el.checked) {
-          const idx = feels.indexOf(feel);
-          if (idx > -1) feels.splice(idx, 1);
-        }
-        autoSave();
+      const eid = card.querySelector('.set-row').dataset.eid;
+      const feel = el.dataset.feel;
+      const feels = state[`s${currentSession}`].exs[eid].feel;
+      if (el.checked && !feels.includes(feel)) feels.push(feel);
+      else if (!el.checked) {
+        const idx = feels.indexOf(feel);
+        if (idx > -1) feels.splice(idx, 1);
       }
+      autoSave();
     });
   });
 
@@ -850,6 +838,28 @@ async function initCloud() {
     }
   });
   // Don't jump to page 1 — use localStorage currentSession (cloud's may be stale)
+  // Migrate old per-set feel to new per-exercise feel
+  SESSIONS.forEach((s, si) => {
+    const sk = `s${si}`;
+    const exs = state[sk].exs;
+    if (!exs) return;
+    Object.keys(exs).forEach(eid => {
+      const ed = exs[eid];
+      // If feel is still on sets (old format), migrate to exercise level
+      if (ed.sets && ed.sets[0] && ed.sets[0].feel !== undefined) {
+        if (!ed.feel) ed.feel = [];
+        // Collect unique feels from all sets
+        const allFeels = new Set();
+        ed.sets.forEach(set => {
+          if (set.feel) set.feel.forEach(f => allFeels.add(f));
+          delete set.feel;
+        });
+        ed.feel = [...allFeels];
+      }
+      // Ensure feel array exists
+      if (!ed.feel) ed.feel = [];
+    });
+  });
   currentSession = currentSession || state.currentSession || 0;
   state.currentSession = currentSession;
   localStorage.setItem(KEY, JSON.stringify(state));
