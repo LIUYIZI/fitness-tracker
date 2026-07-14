@@ -627,7 +627,6 @@ function render() {
     </div>
   </div>
   ${exHtml}
-  ${coachHtml}
   <div class="bottom-section">
     <h3>🏃 有氧</h3>
     <div class="tag-group">${cardioHtml}</div>
@@ -652,6 +651,7 @@ function render() {
     <h3 style="font-size:15px;margin:0 0 6px;font-weight:600;">📋 教练评价与建议</h3>
     <div style="font-size:14px;line-height:1.7;color:#333;white-space:pre-wrap;">${state[`s${currentSession}`].coachNote}</div>
   </div>` : ''}
+  ${coachHtml}
   <div style="height:60px"></div>`;
 
   document.getElementById('app').innerHTML = appHtml;
@@ -831,10 +831,20 @@ async function initCloud() {
   const cloud = await fetchFromCloud();
   if (!cloud) {
     setSyncStatus('local');
-    return; // Cloud unavailable, keep localStorage data
+    return;
   }
-  // Always adopt cloud data — localStorage is just fallback cache
+  // Always adopt cloud data
   state = cloud;
+  // Fix: re-initialize any session whose exs is empty (missing exercise keys)
+  // This handles the case where old cloud data has exs:{} instead of proper templates
+  const dflt = defaultState();
+  SESSIONS.forEach((s, si) => {
+    const sk = `s${si}`;
+    if (!state[sk]) state[sk] = dflt[sk];
+    if (!state[sk].exs || Object.keys(state[sk].exs).length === 0) {
+      state[sk].exs = dflt[sk].exs;
+    }
+  });
   currentSession = state.currentSession || 0;
   localStorage.setItem(KEY, JSON.stringify(state));
   setSyncStatus('synced');
