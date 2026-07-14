@@ -147,7 +147,9 @@
       "type": "跑步机",
       "dur": "10分"
     },
-    "stretch": {},
+    "stretch": {
+      "胸大肌": true
+    },
     "scales": {},
     "notes": ""
   },
