@@ -312,16 +312,28 @@ const GITEE_API=`https://gitee.com/api/v5/repos/${GIT_OWNER}/${GIT_REPO}/content
 
 async function syncPull() {
   try {
-    const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
-    if (ctrl) setTimeout(() => ctrl.abort(), 5000);
-    const res = await fetch(`${GITEE_API}?access_token=${GIT_TOKEN}`, {
-      signal: ctrl ? ctrl.signal : undefined,
-      headers: { 'Accept': 'application/json' }
-    });
-    if (!res.ok) { if (res.status === 404) { updateSyncStatus('☁️ 云端空'); return; } throw new Error('HTTP ' + res.status); }
+    // Try Gitee first, fallback to GitHub
+    const urls = [
+      `${GITEE_API}?access_token=${GIT_TOKEN}`,
+      `https://api.github.com/repos/LIUYIZI/fitness-tracker/contents/data.json`
+    ];
+    let res = null;
+    for (const url of urls) {
+      try {
+        const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        if (ctrl) setTimeout(() => ctrl.abort(), 5000);
+        const headers = url.includes('github') 
+          ? { 'Authorization': 'token ghp_3Pdn34NHvjn8Cyt0mZ0PAGOijsfn22FAFDP', 'Accept': 'application/vnd.github.v3+json' }
+          : { 'Accept': 'application/json' };
+        res = await fetch(url, { signal: ctrl ? ctrl.signal : undefined, headers });
+        if (res.ok) break;
+      } catch(e) { continue; }
+    }
+    if (!res || !res.ok) { updateSyncStatus('☁️ 离线'); return; }
     const d = await res.json();
     gitSha = d.sha;
-    const remote = JSON.parse(atob(d.content));
+    const b64 = d.content.replace(/\n/g, '');
+    const remote = JSON.parse(atob(b64));
     const hasLocalData = Object.keys(state).some(k => k.startsWith('s') && Object.keys(state[k].exs || {}).length > 0);
     const hasRemoteData = Object.keys(remote).some(k => k.startsWith('s') && Object.keys(remote[k]?.exs || {}).length > 0);
     if (hasRemoteData && !hasLocalData) {
@@ -334,7 +346,9 @@ async function syncPull() {
     updateSyncStatus('☁️ 已连接');
     return false;
   } catch(e) {
-    updateSyncStatus('☁️ 离线模式');
+    updateSyncStatus('☁️ 离线');
+    const el = document.getElementById('saveIndicator');
+    if (el) el.textContent = '⚠️ 同步失败: ' + e.message;
     return false;
   }
 }
@@ -343,26 +357,36 @@ async function syncPush() {
   try {
     saveState();
     const content = btoa(unescape(encodeURIComponent(JSON.stringify(state))));
-    const formData = new URLSearchParams();
-    formData.append('access_token', GIT_TOKEN);
-    formData.append('message', `sync ${new Date().toISOString().slice(0,16)}`);
-    formData.append('content', content);
-    if (gitSha) formData.append('sha', gitSha);
-    const putCtrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
-    if (putCtrl) setTimeout(() => putCtrl.abort(), 5000);
-    const res = await fetch(GITEE_API, {
-      signal: putCtrl ? putCtrl.signal : undefined,
-      method: 'POST',
-      headers: { 'Accept': 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: formData
-    });
-    if (res.ok) {
-      const d = await res.json();
-      gitSha = d.content?.sha;
-      updateSyncStatus('☁️ 已同步');
-    }
+    
+    // Try Gitee first
+    try {
+      const formData = new URLSearchParams();
+      formData.append('access_token', GIT_TOKEN);
+      formData.append('message', `sync ${new Date().toISOString().slice(0,16)}`);
+      formData.append('content', content);
+      if (gitSha) formData.append('sha', gitSha);
+      const putCtrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      if (putCtrl) setTimeout(() => putCtrl.abort(), 5000);
+      const res = await fetch(GITEE_API, {
+        signal: putCtrl ? putCtrl.signal : undefined,
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formData
+      });
+      if (res.ok) {
+        const d = await res.json();
+        gitSha = d.content?.sha;
+        updateSyncStatus('☁️ 已同步');
+        return;
+      }
+    } catch(e) {}
+    
+    // Fallback: save to localStorage only
+    updateSyncStatus('☁️ 离线');
   } catch(e) {
-    updateSyncStatus('☁️ 离线模式');
+    updateSyncStatus('☁️ 离线');
+    const el = document.getElementById('saveIndicator');
+    if (el) el.textContent = '⚠️ 同步失败: ' + e.message;
   }
 }
 
