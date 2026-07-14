@@ -347,14 +347,16 @@ async function fetchFromCloud() {
 }
 
 // Push data to Gitee cloud
+let pushLock = false;
 async function pushToCloud(data) {
+  if (pushLock) { console.log('Push already in progress, skipping'); return false; }
+  pushLock = true;
   try {
     setSyncStatus('syncing');
-    // Need fresh SHA for update
-    if (!cloudSHA) {
-      await fetchFromCloud();
-      if (!cloudSHA) throw new Error('Cannot get cloud SHA');
-    }
+    // Always fetch fresh SHA to avoid race conditions
+    await fetchFromCloud();
+    if (!cloudSHA) throw new Error('Cannot reach Gitee cloud');
+
     const content = b64Encode(JSON.stringify(data, null, 2));
     const body = new URLSearchParams();
     body.append('access_token', GITEE_TOKEN);
@@ -365,16 +367,23 @@ async function pushToCloud(data) {
     const resp = await fetch(GITEE_API, { method: 'PUT', body: body });
     if (!resp.ok) {
       const err = await resp.json().catch(() => ({}));
-      if (resp.status === 422 || err.message?.includes('sha')) {
-        // SHA conflict: re-fetch and retry once
-        console.log('SHA conflict, retrying...');
-        const fresh = await fetchFromCloud();
-        if (fresh) {
-          // Merge: keep our newer data
-          const merged = countFilledSessions(data) >= countFilledSessions(fresh) ? data : fresh;
-          cloudSHA = null;
-          return await pushToCloud(merged);
+      // SHA conflict? Re-fetch and retry once
+      if (resp.status === 400 || resp.status === 422) {
+        console.log('SHA mismatch, re-fetching and retrying...');
+        cloudSHA = null;
+        await fetchFromCloud();
+        if (!cloudSHA) throw new Error('Retry: cannot reach cloud');
+        body.set('sha', cloudSHA);
+        const resp2 = await fetch(GITEE_API, { method: 'PUT', body: body });
+        if (!resp2.ok) {
+          const err2 = await resp2.json().catch(() => ({}));
+          throw new Error('HTTP ' + resp2.status + ': ' + JSON.stringify(err2));
         }
+        const result2 = await resp2.json();
+        cloudSHA = result2.content?.sha || result2.sha;
+        lastCloudData = data;
+        setSyncStatus('synced');
+        return true;
       }
       throw new Error('HTTP ' + resp.status + ': ' + JSON.stringify(err));
     }
@@ -388,6 +397,8 @@ async function pushToCloud(data) {
     lastSyncError = e.message;
     setSyncStatus('error');
     return false;
+  } finally {
+    pushLock = false;
   }
 }
 
