@@ -159,7 +159,9 @@
   "s1": {
     "pre": {
       "练前吃了碳水+蛋白": true,
-      "done": true
+      "done": true,
+      "饮水充足": true,
+      "身体无异样": true
     },
     "exs": {
       "legPress": {
