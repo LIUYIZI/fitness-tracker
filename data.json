@@ -460,7 +460,7 @@
       "dur": ""
     },
     "stretch": {
-      "_miss": false,
+      "_miss": true,
       "_done": false
     },
     "scales": {
