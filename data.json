@@ -454,10 +454,13 @@
       }
     },
     "cardio": {
-      "type": "",
+      "type": "没做",
       "dur": ""
     },
-    "stretch": {},
+    "stretch": {
+      "_miss": false,
+      "_done": false
+    },
     "scales": {
       "动作质量": "流畅",
       "满意度": "满意",
