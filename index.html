@@ -700,9 +700,24 @@ function bindEvents() {
       pre[el.dataset.pre] = el.checked;
       // Mark session as started
       if (!pre.done && el.checked) pre.done = true;
+      // Auto-set training date to today if not already stored
+      if (!state[`s${currentSession}`].date) {
+        state[`s${currentSession}`].date = new Date().toISOString().slice(0,10);
+        const dp = document.getElementById('trainDate');
+        if (dp) dp.value = state[`s${currentSession}`].date;
+      }
       autoSave();
     });
   });
+
+  // Training date picker
+  const datePicker = document.getElementById('trainDate');
+  if (datePicker) {
+    datePicker.addEventListener('change', () => {
+      state[`s${currentSession}`].date = datePicker.value;
+      autoSave();
+    });
+  }
 
   // Weight/reps inputs
   document.querySelectorAll('.set-weight input, .set-reps input').forEach(el => {
