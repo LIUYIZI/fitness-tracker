@@ -1,5 +1,5 @@
 {
-  "currentSession": 1,
+  "currentSession": 2,
   "s0": {
     "pre": {
       "精力足": true,
@@ -313,7 +313,13 @@
     "date": "2026-07-17"
   },
   "s2": {
-    "pre": {},
+    "pre": {
+      "精力足": true,
+      "done": true,
+      "身体无异样": true,
+      "练前吃了碳水+蛋白": true,
+      "饮水充足": true
+    },
     "exs": {
       "legPress": {
         "sets": [
@@ -448,7 +454,8 @@
     },
     "stretch": {},
     "scales": {},
-    "notes": ""
+    "notes": "",
+    "date": "2026-07-20"
   },
   "s3": {
     "pre": {},
