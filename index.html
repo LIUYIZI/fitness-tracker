@@ -255,7 +255,7 @@ const SCALES = [
 ];
 
 const SESSIONS = [
-  {wk:1,n:1,tt:'训练A · 推偏重', note:'找发力感为主，选让最后2次稍费力的重量', isA:true, exs:['legPress','chestPress','row','shPress','legCurl','cableCrunch'], tg:{legPress:'从30kg开始试探，找12次标准重量',chestPress:'从20kg开始→第2组试25kg',row:'从20kg开始，逐组加片找发力感',shPress:'20kg起→第2组试25kg',legCurl:'10kg起→第3组试12kg',cableCrunch:'45kg起→逐组加到55kg'}, dw:{legPress:'30',chestPress:'20',row:'20',shPress:'20',legCurl:'10',cableCrunch:'45'},
+  {wk:1,n:1,tt:'训练A · 推偏重', note:'找发力感为主，选让最后2次稍费力的重量', isA:true, exs:['legPress','chestPress','row','shPress','legCurl','cableCrunch'], tg:{legPress:'从30kg开始试探，找12次标准重量',chestPress:'从20kg开始→第2组试25kg',row:'从20kg开始，逐组加片找发力感',shPress:'20kg起→第2组试25kg',legCurl:'10kg起→第3组试12kg',cableCrunch:'45kg起→逐组加到55kg'}, dw:{legPress:['30','30','30'],chestPress:['20','25','25'],row:['20','25','30'],shPress:['20','25','25'],legCurl:['10','10','12'],cableCrunch:['45','50','55']},
    coach:`<div style="background:#f8fdf8;border-left:4px solid #2d7d46;padding:12px 14px;margin:10px 14px;border-radius:8px;font-size:13px;line-height:1.6;">
 <b style="color:#2d7d46;font-size:15px;">👨‍🏫 教练分析（7/13 训练后）</b><br><br>
 <b>整体：</b>首次训练完成度极高，6/6动作+额外加练高位下拉4组。力量水平超预期——攀岩/足球底子在。<br><br>
@@ -268,11 +268,11 @@ const SESSIONS = [
 ⑥ <b>卷腹</b> 45→50→55kg (RPE 6→6→7) — 连续加10kg仍RPE仅7，腹肌力量充足但训练目标不是堆重量。<b>→维持45-50kg找腹肌孤立感</b><br><br>
 <b style="color:#e53935;">⚠️ 睡眠：</b>睡好≥7h未勾——唯一风险信号。疲劳管理是基础<br>
 <b style="color:#2d7d46;">💪 周四建议：</b>腿举试35kg(RPE≤6就直接40kg) · 高位下拉选30-35kg · 蝴蝶机/腿屈伸/面拉首次轻重量 · 整体可以push但要保证周六足球前48h恢复</div>`},
-  {wk:1,n:2,tt:'训练B · 拉偏重', note:'腿举试35kg · 高位下拉选10-12次标准重量 · 蝴蝶机/腿屈伸/面拉首次做，轻重量找发力感', isA:false, exs:['legPress','latPulldown','pecFly','legExt','facePull','plank'], tg:{legPress:'目标 35kg',latPulldown:'选10-12次标准重量（建议25kg起试）',pecFly:'首次·轻重量（10kg）找胸内侧感',legExt:'首次·15kg控制不甩腿',facePull:'首次·7.5kg肩后束优先',plank:'30-45秒/段'}, dw:{legPress:'35',latPulldown:'25',pecFly:'10',legExt:'15',facePull:'7.5',plank:'30'}},
-  {wk:2,n:3,tt:'训练A · 推偏重', note:'腿举60→80→100kg · 推胸15kg（⚠️不同健身房设备差异）· 划船40kg×3 · 推肩26→33→33kg · 腿弯举26→33→38kg · 卷腹45→50→55kg', isA:true, exs:['legPress','chestPress','row','shPress','legCurl','cableCrunch'], tg:{legPress:'上限100kg·注意收窄跳跃',chestPress:'回原健身房后25kg重新校准',row:'40kg×3组·背部持续优势',shPress:'26→33→33kg',legCurl:'26→33→38kg',cableCrunch:'45→50→55kg+额外加练至60kg'}, dw:{legPress:'60',chestPress:'25',row:'40',shPress:'26',legCurl:'26',cableCrunch:'45'}},
-  {wk:2,n:4,tt:'训练B · 拉偏重', note:'腿举50→80→90kg（收窄跳跃）· 高位下拉35→40→45kg · 蝴蝶机35→40→40kg · 腿屈伸21→24→24kg · 面拉15→21→21kg · 平板支撑65→65→70秒', isA:false, exs:['legPress','latPulldown','pecFly','legExt','facePull','plank'], tg:{legPress:'50→80→90kg 收窄跳跃',latPulldown:'35→40→45kg 背部优势继续挖',pecFly:'35→40→40kg 冲12-15次',legExt:'21→24→24kg 控制不甩腿',facePull:'15→21→21kg 保持后束感',plank:'65→65→70秒 别憋气'}, dw:{legPress:'50',latPulldown:'35',pecFly:'35',legExt:'21',facePull:'15',plank:'65'}},
-  {wk:3,n:5,tt:'训练A · 推偏重 🏆', note:'腿举60→90→100kg · 推胸回原健身房25kg×3冲12次 · 划船45kg×3 · 推肩36→40→40kg · 腿弯举33→38→38kg · 卷腹55→60→65kg · 可递减组', isA:true, exs:['legPress','chestPress','row','shPress','legCurl','cableCrunch'], tg:{legPress:'60→90→100kg 冲刺100kg稳定',chestPress:'回原健身房25kg×3组冲12次',row:'45kg×3组 背部巅峰',shPress:'36→40→40kg 冲击40kg工作重量',legCurl:'33→38→38kg 最后一组可递减',cableCrunch:'55→60→65kg'}, dw:{legPress:'60',chestPress:'25',row:'45',shPress:'36',legCurl:'33',cableCrunch:'55'}},
-  {wk:3,n:6,tt:'训练B · 拉偏重 🏆', note:'腿举70→90→110kg · 高位下拉40→45→50kg · 蝴蝶机40→45→45kg · 腿屈伸24→26→26kg · 面拉21kg×3保持 · 平板支撑70→75→75秒', isA:false, exs:['legPress','latPulldown','pecFly','legExt','facePull','plank'], tg:{legPress:'70→90→110kg 🔥冲极限',latPulldown:'40→45→50kg',pecFly:'40→45→45kg 夹胸找内侧泵感',legExt:'24→26→26kg',facePull:'21kg×3组保持 后束优先',plank:'70→75→75秒·冲刺组'}, dw:{legPress:'70',latPulldown:'40',pecFly:'40',legExt:'24',facePull:'21',plank:'70'}}
+  {wk:1,n:2,tt:'训练B · 拉偏重', note:'腿举试35kg · 高位下拉选10-12次标准重量 · 蝴蝶机/腿屈伸/面拉首次做，轻重量找发力感', isA:false, exs:['legPress','latPulldown','pecFly','legExt','facePull','plank'], tg:{legPress:'目标 35kg',latPulldown:'选10-12次标准重量（建议25kg起试）',pecFly:'首次·轻重量（10kg）找胸内侧感',legExt:'首次·15kg控制不甩腿',facePull:'首次·7.5kg肩后束优先',plank:'30-45秒/段'}, dw:{legPress:['40','60','80'],latPulldown:['26','33','40'],pecFly:['33','33','40'],legExt:['19','19','19'],facePull:['10','15','21'],plank:['60','60','60']}},
+  {wk:2,n:3,tt:'训练A · 推偏重', note:'腿举60→80→100kg · 推胸15kg（⚠️不同健身房设备差异）· 划船40kg×3 · 推肩26→33→33kg · 腿弯举26→33→38kg · 卷腹45→50→55kg', isA:true, exs:['legPress','chestPress','row','shPress','legCurl','cableCrunch'], tg:{legPress:'上限100kg·注意收窄跳跃',chestPress:'回原健身房后25kg重新校准',row:'40kg×3组·背部持续优势',shPress:'26→33→33kg',legCurl:'26→33→38kg',cableCrunch:'45→50→55kg+额外加练至60kg'}, dw:{legPress:['60','80','100'],chestPress:['25','25','25'],row:['40','40','40'],shPress:['26','33','33'],legCurl:['26','33','38'],cableCrunch:['45','50','55']}},
+  {wk:2,n:4,tt:'训练B · 拉偏重', note:'腿举50→80→90kg（收窄跳跃）· 高位下拉35→40→45kg · 蝴蝶机35→40→40kg · 腿屈伸21→24→24kg · 面拉15→21→21kg · 平板支撑65→65→70秒', isA:false, exs:['legPress','latPulldown','pecFly','legExt','facePull','plank'], tg:{legPress:'50→80→90kg 收窄跳跃',latPulldown:'35→40→45kg 背部优势继续挖',pecFly:'35→40→40kg 冲12-15次',legExt:'21→24→24kg 控制不甩腿',facePull:'15→21→21kg 保持后束感',plank:'65→65→70秒 别憋气'}, dw:{legPress:['50','80','90'],latPulldown:['35','40','45'],pecFly:['35','40','40'],legExt:['21','24','24'],facePull:['15','21','21'],plank:['65','65','70']}},
+  {wk:3,n:5,tt:'训练A · 推偏重 🏆', note:'腿举60→90→100kg · 推胸回原健身房25kg×3冲12次 · 划船45kg×3 · 推肩36→40→40kg · 腿弯举33→38→38kg · 卷腹55→60→65kg · 可递减组', isA:true, exs:['legPress','chestPress','row','shPress','legCurl','cableCrunch'], tg:{legPress:'60→90→100kg 冲刺100kg稳定',chestPress:'回原健身房25kg×3组冲12次',row:'45kg×3组 背部巅峰',shPress:'36→40→40kg 冲击40kg工作重量',legCurl:'33→38→38kg 最后一组可递减',cableCrunch:'55→60→65kg'}, dw:{legPress:['60','90','100'],chestPress:['25','25','25'],row:['45','45','45'],shPress:['36','40','40'],legCurl:['33','38','38'],cableCrunch:['55','60','65']}},
+  {wk:3,n:6,tt:'训练B · 拉偏重 🏆', note:'腿举70→90→110kg · 高位下拉40→45→50kg · 蝴蝶机40→45→45kg · 腿屈伸24→26→26kg · 面拉21kg×3保持 · 平板支撑70→75→75秒', isA:false, exs:['legPress','latPulldown','pecFly','legExt','facePull','plank'], tg:{legPress:'70→90→110kg 🔥冲极限',latPulldown:'40→45→50kg',pecFly:'40→45→45kg 夹胸找内侧泵感',legExt:'24→26→26kg',facePull:'21kg×3组保持 后束优先',plank:'70→75→75秒·冲刺组'}, dw:{legPress:['70','90','110'],latPulldown:['40','45','50'],pecFly:['40','45','45'],legExt:['24','26','26'],facePull:['21','21','21'],plank:['70','75','75']}}
 ];
 
 // ═══════════ STATE ═══════════
@@ -543,7 +543,9 @@ function render() {
     if (!ed) return;
     const savedOrder = ed.order || (ei + 1);
     let rowsHtml = '';
-    const dw = (s.dw||{})[eid] || '';
+    const dwRaw = (s.dw||{})[eid] || '';
+    // Support both legacy string and new array format
+    const dwArr = Array.isArray(dwRaw) ? dwRaw : [dwRaw, dwRaw, dwRaw];
     // Rep hint: show target rep count (e.g. "12" from "10-12", "45秒" from "30-45秒")
     let repHint = e.t.includes('×') ? e.t.split('×')[1] : e.t;
     const rm = repHint.match(/(\d+)-(\d+)(秒?)/);
@@ -552,7 +554,7 @@ function render() {
     [0,1,2].forEach(setIdx => {
       const sd = ed.sets[setIdx] || {w:'',r:'',rpe:''};
       // For untrained sessions: show planned weight as placeholder hint, NOT as pre-filled value
-      const weightPh = sd.w ? '' : (dw || '');
+      const weightPh = sd.w ? '' : (dwArr[setIdx] || dwArr[0] || '');
       const exUnit = e.t.includes('秒') ? '秒' : 'kg';
       const rpeOpts = RPE_DATA.map(r => {
         const id = `rpe_${currentSession}_${eid}_${setIdx}_${r.v}`;
