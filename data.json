@@ -500,7 +500,9 @@
             "rpe": ""
           }
         ],
-        "feel": [],
+        "feel": [
+          "股四酸"
+        ],
         "order": 1
       },
       "latPulldown": {
