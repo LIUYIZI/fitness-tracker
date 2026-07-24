@@ -666,7 +666,7 @@ function render() {
     <div class="sub">${s.tt} · 第${s.wk}/3周 · <span id="headerSyncStatus">☁️</span></div>
   </div>
   <div class="session-bar">${sesHtml}</div>
-  <div id="saveIndicator" class="save-indicator">🔄 自动保存中 · <span style="color:#f5a623">☁️ 云端待同步</span></div>
+  <div id="saveIndicator" class="save-indicator"></div>
   <div class="note-banner">📌 ${s.note}</div>
   <div class="pre-section">
     <h3>训练前状态</h3>
@@ -882,6 +882,7 @@ function bindEvents() {
 
 // ═══════════ GO ═══════════
 render();
+updateSyncIndicator();
 // On page load: pull cloud data and adopt it (cloud is source of truth)
 setTimeout(() => initCloud(), 300);
 
@@ -953,6 +954,7 @@ async function initCloud() {
   setSyncStatus('synced');
   localStorage.setItem(KEY + '_lastSync', Date.now().toString());
   render();
+  updateSyncIndicator();
   console.log('Adopted cloud data (' + countFilledSessions(cloud) + ' sessions)');
 }
 </script>
