@@ -407,14 +407,16 @@ async function pushToCloud(data) {
         cloudSHA = result2.content?.sha || result2.sha;
         lastCloudData = data;
         setSyncStatus('synced');
+        localStorage.setItem(KEY + '_lastSync', Date.now().toString());
         return true;
       }
       throw new Error('HTTP ' + resp.status + ': ' + JSON.stringify(err));
     }
     const result = await resp.json();
     cloudSHA = result.content?.sha || result.sha;
-    lastCloudData = data;
     setSyncStatus('synced');
+    lastCloudData = data;
+    localStorage.setItem(KEY + '_lastSync', Date.now().toString());
     return true;
   } catch(e) {
     console.log('Cloud push failed:', e.message);
@@ -435,9 +437,9 @@ function updateSyncIndicator() {
   const el = document.getElementById('saveIndicator');
   if (!el) return;
   const statusText = {
-    'local': '🔄 自动保存中 · <span style="color:#f5a623">☁️ 云端待同步</span>',
+    'local': '🔄 自动保存中 · <span style="color:#f5a623">☁️ 云端待同步</span> <span id="retrySync" style="color:#4a6cf7;font-weight:600;cursor:pointer;text-decoration:underline;margin-left:4px;">🔄 手动同步</span>',
     'syncing': '🔄 自动保存中 · <span style="color:#4a6cf7">☁️ 同步中...</span>',
-    'synced': '🔄 自动保存中 · <span style="color:#2d7d46">☁️ 已同步</span>',
+    'synced': '🔄 自动保存中 · <span style="color:#2d7d46">☁️ 已同步</span> <span id="retrySync" style="color:#4a6cf7;font-weight:600;cursor:pointer;text-decoration:underline;margin-left:4px;">🔄 手动同步</span>',
     'error': '🔄 自动保存中 · <span style="color:#e53935">⚠️ 同步失败</span> <span id="retrySync" style="color:#4a6cf7;font-weight:600;cursor:pointer;text-decoration:underline;">重试</span><br><span style="font-size:10px;color:#999;">' + (lastSyncError || '网络错误') + '</span>',
   };
   el.innerHTML = statusText[syncStatus] || statusText['local'];
@@ -862,9 +864,25 @@ render();
 setTimeout(() => initCloud(), 300);
 
 async function initCloud() {
+  // Check if we have a previously synced state
+  const lastSync = localStorage.getItem(KEY + '_lastSync');
+  if (lastSync) {
+    // If we synced within last 24h, start with 'synced' status
+    const syncAge = Date.now() - parseInt(lastSync);
+    if (syncAge < 86400000) {
+      setSyncStatus('synced');
+    }
+  }
+  
   const cloud = await fetchFromCloud();
   if (!cloud) {
-    setSyncStatus('local');
+    // Keep previous synced status if we have one; don't overwrite to 'local'
+    if (syncStatus === 'synced') {
+      // Was synced, stay synced — just note cloud fetch failed
+      console.log('Cloud fetch failed but keeping synced status (last sync was recent)');
+    } else {
+      setSyncStatus('local');
+    }
     return;
   }
   // Always adopt cloud data
@@ -911,6 +929,7 @@ async function initCloud() {
   state.currentSession = currentSession;
   localStorage.setItem(KEY, JSON.stringify(state));
   setSyncStatus('synced');
+  localStorage.setItem(KEY + '_lastSync', Date.now().toString());
   render();
   console.log('Adopted cloud data (' + countFilledSessions(cloud) + ' sessions)');
 }
