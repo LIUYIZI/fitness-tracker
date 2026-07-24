@@ -317,9 +317,11 @@ function saveState() {
   updateSyncIndicator();
 }
 
-// ═══════════ GITEE CLOUD SYNC ═══════════
+// ═══════════ CLOUD SYNC (read from Pages, write to Gitee) ═══════════
 const GITEE_TOKEN = '4094381111244372341df845351ffd88';
 const GITEE_API = 'https://gitee.com/api/v5/repos/luiyizi/fitness-tracker/contents/data.json';
+// Same-origin read: zero CORS, zero auth, always reachable if the page loaded
+const PAGES_DATA = 'data.json';
 let syncStatus = 'local'; // 'local' | 'syncing' | 'synced' | 'error'
 let cloudSHA = null;
 let lastCloudData = null;
@@ -354,8 +356,28 @@ function b64Decode(str) {
   catch(e) { return atob(str); }
 }
 
-// Fetch data from Gitee cloud
+// Fetch data: same-origin Pages first (fast, always works), Gitee API as fallback
 async function fetchFromCloud() {
+  // 1) Try same-origin data.json served by GitHub Pages — no CORS, no auth, same CDN as the HTML
+  try {
+    const resp = await fetch(PAGES_DATA + '?t=' + Date.now());
+    if (resp.ok) {
+      const data = await resp.json();
+      if (data && typeof data === 'object' && data.s0) {
+        lastCloudData = data;
+        // Also try to get SHA from Gitee for later writes (non-blocking)
+        fetch(GITEE_API + '?access_token=' + GITEE_TOKEN + '&t=' + Date.now())
+          .then(r => r.ok ? r.json() : null)
+          .then(j => { if (j && j.sha) cloudSHA = j.sha; })
+          .catch(() => {});
+        return data;
+      }
+    }
+  } catch(e) {
+    console.log('Pages fetch failed, trying Gitee:', e.message);
+  }
+
+  // 2) Fallback: Gitee API
   try {
     const resp = await fetch(GITEE_API + '?access_token=' + GITEE_TOKEN + '&t=' + Date.now());
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
@@ -365,7 +387,7 @@ async function fetchFromCloud() {
     lastCloudData = JSON.parse(decoded);
     return lastCloudData;
   } catch(e) {
-    console.log('Cloud fetch failed:', e.message);
+    console.log('Gitee fetch also failed:', e.message);
     return null;
   }
 }
